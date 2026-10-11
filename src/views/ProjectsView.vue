@@ -25,6 +25,14 @@ onBeforeUnmount(() => observer?.disconnect())
 function toggle(p: Project) {
   activeId.value = activeId.value === p.id ? null : p.id
 }
+
+/** 数据就绪后确保自动播放（慢网下 autoplay 可能静默失败） */
+function ensurePlay(e: Event) {
+  const v = e.target as HTMLVideoElement
+  v.play().catch(() => {
+    /* 静音自动播放被策略阻止时静默忽略 */
+  })
+}
 </script>
 
 <template>
@@ -58,6 +66,8 @@ function toggle(p: Project) {
                 loop
                 playsinline
                 preload="auto"
+                @loadeddata="ensurePlay"
+                @canplay="ensurePlay"
                 :aria-label="`${project.name} 演示视频`"
               />
             </div>
