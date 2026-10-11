@@ -10,7 +10,7 @@ import { scrollToHash } from '../utils/scroll'
       <!-- 左侧：自我介绍 -->
       <div class="hero__intro">
         <p class="hero__eyebrow">
-          <span class="hero__eyebrow-dot" /> {{ profile.role }} · 全栈基础 · {{ profile.enName }}
+          <span class="hero__eyebrow-dot" /> {{ profile.role }} · 数据分析 · {{ profile.enName }}
         </p>
         <h1 class="hero__title">
           你好，我是

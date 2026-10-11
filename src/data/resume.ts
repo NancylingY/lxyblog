@@ -25,9 +25,9 @@ export const profile = {
   gender: '男',
   phone: '14749334143',
   email: 'water792383@qq.com',
-  role: '后端开发',
+  role: '全栈开发',
   slogan: '用代码把想法变成产品',
-  intro: '具备前后端全栈开发与大数据分析基础能力，喜欢从数据中挖掘价值，也享受把想法变成可用产品的过程。',
+  intro: '具备前后端全栈开发与大数据分析基础能力，从数据中挖掘价值，用 AI 创造美好，也享受把想法变成可用产品的过程。',
 }
 
 export const advantages: string[] = [
