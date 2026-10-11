@@ -151,11 +151,7 @@ export const projects: Project[] = [
     nameEn: 'HappyWOO',
     role: 'AI 辅助开发',
     period: '',
-    summary: [
-      '纯前端 HTML5 Canvas 像素冒险游戏，无需后端、数据库与运行时，双版本同源发行：窗口版（Neutralino + WebView2 桌面壳）与网页版（浏览器直接打开 HTML 即可运行）',
-      '全部美术资源由代码程序化生成（像素画绘制原语），无外部素材依赖；使用固定种子随机数保证地图装饰与瓦片抖动每次运行一致',
-      '实现草莓、西瓜、夜光花三种作物种植系统，夜光花昼慢夜快、夜晚发光照亮周围；修复出生点碰撞锁死（findSpawn 按玩家碰撞盒四角验证）',
-    ],
+    summary: ['纯前端 HTML5 Canvas 休闲像素冒险游戏，无需后端、数据库'],
     tags: ['像素游戏', 'Canvas 2D', '程序化美术', '双端同源', '种植系统'],
     stack: [
       { group: '游戏渲染', items: ['HTML5 Canvas 2D', '离屏双缓冲', '整数倍放大'] },
