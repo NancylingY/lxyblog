@@ -14,6 +14,8 @@ export interface Project {
   stack: { group: string; items: string[] }[]
   color: string
   logo: string
+  /** 展示视频（展开卡片后自动播放） */
+  video?: string
 }
 
 export const profile = {
@@ -82,6 +84,7 @@ export const projects: Project[] = [
     ],
     color: '#3ddc84',
     logo: 'https://aka.doubaocdn.com/s/yz7Oa4DMBL',
+    video: './videos/smartread-demo.mp4',
   },
   {
     id: 'foodtalk',

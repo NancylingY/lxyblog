@@ -45,10 +45,25 @@ function toggle(p: Project) {
           :style="{ transitionDelay: `${pi * 0.12}s` }"
           @click="toggle(project)"
         >
-          <!-- 卡片头部：封面 + Logo -->
+          <!-- 卡片头部：封面 + Logo / 展开后展示视频 -->
           <div class="project__cover" :style="{ '--cover': project.color }">
             <span class="project__cover-index">0{{ pi + 1 }}</span>
-            <div class="project__cover-mark">
+
+            <!-- 展开且配置了展示视频：自动播放 -->
+            <div v-if="activeId === project.id && project.video" class="project__cover-video">
+              <video
+                :src="project.video"
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="auto"
+                :aria-label="`${project.name} 演示视频`"
+              />
+            </div>
+
+            <!-- 收起：静态 Logo -->
+            <div v-else class="project__cover-mark">
               <img
                 :src="project.logo"
                 :alt="`${project.name} Logo`"
@@ -168,6 +183,21 @@ function toggle(p: Project) {
   align-items: center;
   justify-content: center;
   z-index: 1;
+}
+
+/* 展开后的演示视频：撑满封面区 */
+.project__cover-video {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.project__cover-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .project__cover-logo {
