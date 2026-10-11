@@ -145,6 +145,28 @@ export const projects: Project[] = [
     color: '#c792ea',
     logo: 'https://aka.doubaocdn.com/s/JF26gix0BC',
   },
+  {
+    id: 'happywoo',
+    name: '快乐小窝',
+    nameEn: 'HappyWOO',
+    role: 'AI 辅助开发',
+    period: '',
+    summary: [
+      '纯前端 HTML5 Canvas 像素冒险游戏，无需后端、数据库与运行时，双版本同源发行：窗口版（Neutralino + WebView2 桌面壳）与网页版（浏览器直接打开 HTML 即可运行）',
+      '全部美术资源由代码程序化生成（像素画绘制原语），无外部素材依赖；使用固定种子随机数保证地图装饰与瓦片抖动每次运行一致',
+      '实现草莓、西瓜、夜光花三种作物种植系统，夜光花昼慢夜快、夜晚发光照亮周围；修复出生点碰撞锁死（findSpawn 按玩家碰撞盒四角验证）',
+    ],
+    tags: ['像素游戏', 'Canvas 2D', '程序化美术', '双端同源', '种植系统'],
+    stack: [
+      { group: '游戏渲染', items: ['HTML5 Canvas 2D', '离屏双缓冲', '整数倍放大'] },
+      { group: '编程语言', items: ['原生 JavaScript（ES5）', '无框架', '无构建步骤'] },
+      { group: '桌面端', items: ['Neutralino', 'WebView2'] },
+      { group: '测试验证', items: ['Playwright（开发用）'] },
+    ],
+    color: '#8be04f',
+    logo: 'https://aka.doubaocdn.com/s/rGgfVovKT0',
+    video: './videos/happywoo-demo.mp4',
+  },
 ]
 
 export const navLinks = [
