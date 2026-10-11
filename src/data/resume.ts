@@ -124,6 +124,7 @@ export const projects: Project[] = [
     ],
     color: '#56c8ff',
     logo: 'https://aka.doubaocdn.com/s/SpZhnBu9Vl',
+    video: './videos/canteen-demo.mp4',
   },
   {
     id: 'campus-admin',
