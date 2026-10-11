@@ -26,8 +26,8 @@ import { scrollToHash } from '../utils/scroll'
 
         <ul class="hero__stats">
           <li class="hero__stat">
-            <span class="hero__stat-num">5</span>
-            <span class="hero__stat-label">主修核心课程</span>
+            <span class="hero__stat-num">20+</span>
+            <span class="hero__stat-label">技术栈</span>
           </li>
           <li class="hero__stat">
             <span class="hero__stat-num">4</span>
