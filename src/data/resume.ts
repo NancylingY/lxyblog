@@ -32,7 +32,7 @@ export const profile = {
 
 export const advantages: string[] = [
   '具备前后端全栈开发与大数据分析基础能力',
-  '熟练使用 Copilot、Cursor 等 AI 辅助开发工具，提升编码调试与文档编写效率',
+  '熟练使用 Copilot、Cursor、Codex 等 AI 辅助开发工具，提升编码调试与文档编写效率',
   '前端可基于 Vue 开发响应式交互页面',
   '后端熟悉 Spring Boot 与 MyBatis，可独立完成 RESTful API 设计与数据库开发',
   '掌握 Pandas、NumPy，可完成数据清洗、处理与分析任务',
@@ -61,7 +61,7 @@ export const skills = [
   {
     group: '数据 & 工程',
     icon: 'database',
-    items: ['Pandas', 'NumPy', 'MySQL 8.0 / 9.1', 'Docker', 'Git', 'Postman', 'Swagger'],
+    items: ['Pandas', 'NumPy', 'MySQL 8.0 / 9.1', 'Docker', 'Linux', 'Git', 'Postman', 'Swagger'],
   },
 ]
 
