@@ -20,7 +20,7 @@ import { scrollToHash } from '../utils/scroll'
         <p class="hero__desc">{{ profile.intro }}</p>
 
         <div class="hero__actions">
-          <router-link class="btn btn--primary" to="/projects">查看作品</router-link>
+          <a class="btn btn--primary" href="javascript:void(0)" @click="scrollToHash('#projects')">查看作品</a>
           <a class="btn btn--ghost" href="javascript:void(0)" @click="scrollToHash('#about')">关于我</a>
         </div>
 

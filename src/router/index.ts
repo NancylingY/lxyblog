@@ -17,10 +17,9 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      // 项目已合并进首页，旧路径重定向到首页项目锚点
       path: '/projects',
-      name: 'projects',
-      // 项目页独立 chunk，懒加载
-      component: () => import('../views/ProjectsView.vue'),
+      redirect: '/#projects',
     },
     {
       path: '/:pathMatch(.*)*',

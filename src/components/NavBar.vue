@@ -12,7 +12,7 @@ const menuOpen = ref(false)
 const links = [
   { to: '/', hash: '#about', label: '关于' },
   { to: '/', hash: '#skills', label: '技能' },
-  { to: '/projects', hash: '', label: '项目' },
+  { to: '/', hash: '#projects', label: '项目' },
   { to: '/', hash: '#contact', label: '联系' },
 ]
 
@@ -22,12 +22,6 @@ function onScroll() {
 
 async function goTo(link: { to: string; hash: string }) {
   menuOpen.value = false
-
-  // 项目页：直接路由跳转
-  if (link.to === '/projects') {
-    if (route.path !== '/projects') router.push('/projects')
-    return
-  }
 
   // 首页锚点：已在本页直接滚动，否则先回首页再滚动
   if (route.path === '/') {
@@ -64,7 +58,6 @@ onBeforeUnmount(() => {
           :key="link.label"
           href="javascript:void(0)"
           class="nav__link"
-          :class="{ 'nav__link--active': route.path === '/projects' && link.to === '/projects' }"
           @click="goTo(link)"
         >
           <span class="nav__link-index">0{{ i + 1 }}</span>
