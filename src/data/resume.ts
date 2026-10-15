@@ -31,11 +31,12 @@ export const profile = {
 }
 
 export const advantages: string[] = [
-  '具备前后端全栈开发与大数据分析基础能力',
-  '熟练使用 Copilot、Cursor、Codex 等 AI 辅助开发工具，提升编码调试与文档编写效率',
-  '前端可基于 Vue 开发响应式交互页面',
-  '后端熟悉 Spring Boot 与 MyBatis，可独立完成 RESTful API 设计与数据库开发',
-  '掌握 Pandas、NumPy，可完成数据清洗、处理与分析任务',
+  '独立完成从 0 到 1 的全栈开发，从数据库设计、后端 API 到前端页面，一人交付完整可上线产品',
+  '熟练驾驭 AI 辅助开发，使用 Copilot、DeepSeek、Codex 等工具，编码、调试、文档效率成倍提升',
+  '双后端技术栈落地经验，Spring Boot / FastAPI 均有完整项目，独立完成 RESTful API 设计、权限鉴权与 SQL 调优',
+  'Vue 3 响应式前端能力，Composition API + TypeScript，覆盖 Web 端与 Uni-app 移动端多端适配',
+  '数据驱动产品决策，用 Pandas / NumPy 完成数据清洗与建模分析，结合 ECharts 做可视化呈现',
+  '熟悉容器化部署与发布，Docker 打包、GitHub Pages 静态托管，独立完成项目上线与持续迭代',
 ]
 
 export const education = {
