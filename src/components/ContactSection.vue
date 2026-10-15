@@ -102,7 +102,7 @@ function mailTo() {
             <span class="contact__row-icon">◎</span>
             <span class="contact__row-body">
               <span class="contact__row-label">坐标</span>
-              <span class="contact__row-value">广州 · 广州软件学院</span>
+              <span class="contact__row-value">广东 · 广州</span>
             </span>
           </div>
 

@@ -30,7 +30,7 @@ import { scrollToHash } from '../utils/scroll'
             <span class="hero__stat-label">技术栈</span>
           </li>
           <li class="hero__stat">
-            <span class="hero__stat-num">5</span>
+            <span class="hero__stat-num">6</span>
             <span class="hero__stat-label">个人项目</span>
           </li>
           <li class="hero__stat">
