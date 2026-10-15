@@ -51,12 +51,12 @@ export const skills = [
   {
     group: '后端',
     icon: 'server',
-    items: ['Java', 'Spring Boot 2.7', 'MyBatis Plus', 'Spring Security', 'JWT', 'Python 3.9', 'Flask', 'RESTful API'],
+    items: ['Java', 'Spring Boot 2.7', 'MyBatis Plus', 'Spring Security', 'FastAPI', 'SQLAlchemy ORM', 'JWT', 'Python', 'RESTful API'],
   },
   {
     group: '前端',
     icon: 'code',
-    items: ['Vue 3 (Composition API)', 'TypeScript', 'Uni-app', 'Element Plus', 'SCSS', 'Vite'],
+    items: ['Vue 3 (Composition API)', 'TypeScript', 'Pinia', 'Vue Router', 'Element Plus', 'ECharts', 'Uni-app', 'SCSS', 'Vite'],
   },
   {
     group: '数据 & 工程',
@@ -66,6 +66,26 @@ export const skills = [
 ]
 
 export const projects: Project[] = [
+  {
+    id: 'ehr',
+    name: '电子医疗管理系统',
+    nameEn: 'EHR Management System',
+    role: '全栈开发',
+    period: '',
+    summary: [
+      '面向医院从患者入院到出院完整医疗流程的电子化管理平台，覆盖病案书写与电子签名、多科室多角色协作、医疗物料库存、统计分析与独立患者门户',
+      '基于 Vue 3 + TypeScript + Pinia + Element Plus 构建前端 SPA，后端使用 FastAPI + SQLAlchemy ORM 对接 MySQL，JWT 鉴权实现护士/医生/管理员三级权限，并接入 ECharts 完成可视化统计与数据大屏',
+    ],
+    tags: ['病案电子化', '多角色权限', 'ECharts 大屏', 'JWT 鉴权', '患者门户'],
+    stack: [
+      { group: '后端', items: ['FastAPI', 'SQLAlchemy ORM', 'Python', 'JWT', 'bcrypt', 'MySQL 9.1.0'] },
+      { group: '前端', items: ['Vue 3 (Composition API)', 'TypeScript', 'Pinia', 'Element Plus', 'ECharts', 'Vite'] },
+      { group: '工具', items: ['Git', 'RESTful API'] },
+    ],
+    color: '#38d9c9',
+    logo: 'https://aka.doubaocdn.com/s/MUdRjMVOC0',
+    video: './videos/ehr-demo.mp4',
+  },
   {
     id: 'smartread',
     name: '智阅',
