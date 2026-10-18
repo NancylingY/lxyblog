@@ -75,13 +75,13 @@ export function createHospitalScene(container: HTMLElement): () => void {
   const aspect = container.clientWidth / container.clientHeight
   const camera = new THREE.PerspectiveCamera(35, aspect, 0.1, 140)
 
-  const camFar = new THREE.Vector3(11.4, 8.2, 14.4)
-  const camNear = new THREE.Vector3(9.8, 6.6, 12.4)
+  const camFar = new THREE.Vector3(10.6, 7.4, 13.4)
+  const camNear = new THREE.Vector3(9.4, 6.2, 11.9)
   camera.position.copy(camFar)
 
   /* ================= 控制器 ================= */
   const controls = new OrbitControls(camera, renderer.domElement)
-  controls.target.set(0, 2.1, -0.6)
+  controls.target.set(0, 1.95, -0.5)
   controls.enableDamping = true
   controls.dampingFactor = 0.055
   controls.rotateSpeed = 0.65
@@ -124,7 +124,7 @@ export function createHospitalScene(container: HTMLElement): () => void {
   scene.add(sun)
 
   // 天空补光（让背光面不发黑）
-  const fill = new THREE.DirectionalLight(0xa8cbe8, 0.32)
+  const fill = new THREE.DirectionalLight(0xbcd8ef, 0.58)
   fill.position.set(9, 5, -7)
   scene.add(fill)
 

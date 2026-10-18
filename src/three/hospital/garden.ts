@@ -10,7 +10,12 @@
 import * as THREE from 'three'
 import { box, cyl, toon, glowMat } from '../toon'
 import { HL } from './layout'
-import { wayfindingPictogramTexture, noticePictogramTexture, binLabelTexture } from './textures'
+import {
+  wayfindingPictogramTexture,
+  noticePictogramTexture,
+  binLabelTexture,
+  groundMarkTexture,
+} from './textures'
 import { buildFountain, type FountainApi } from './fountain'
 
 const GP = {
@@ -367,6 +372,21 @@ export function buildGarden(root: THREE.Group): GardenApi {
   guide.position.set(0, 0.062, (PZ0 + PZ1) / 2)
   g.add(guide)
 
+  // 侧翼前的过渡铺装带，补上主楼立面前那一条裸地
+  ;[-3.775, 3.775].forEach((sx) => {
+    const band = box(1.62, 0.05, 0.735, GP.walk, { line: true })
+    band.position.set(sx, 0.06, 0.0475)
+    g.add(band)
+
+    // 分缝
+    for (let z = -0.16; z < 0.42; z += 0.28) {
+      const seam = new THREE.Mesh(new THREE.PlaneGeometry(1.56, 0.01), seamMat)
+      seam.rotation.x = -Math.PI / 2
+      seam.position.set(sx, Y.plaza + 0.005, z)
+      g.add(seam)
+    }
+  })
+
   /* ================= 花园带：中央平台 + 步道 + 草坪 ================= */
   const GZ0 = 1.95
   const GZ1 = 4.95
@@ -426,17 +446,29 @@ export function buildGarden(root: THREE.Group): GardenApi {
   /* ================= 水景 ================= */
   const fountain: FountainApi = buildFountain(g, 0, 2.95)
 
-  // 水景周围的深色石环，把喷泉"压"在平台上
+  // 水景周围的环形铺装：与广场同色 + 一道深色镶边，读作"铺装"而不是影子
   const ringPad = new THREE.Mesh(
-    new THREE.RingGeometry(0.94, 1.4, 52, 1),
-    toon(0xd3d9de, { side: THREE.DoubleSide }),
+    new THREE.RingGeometry(0.94, 1.4, 56, 1),
+    toon(0xe9ecef, { side: THREE.DoubleSide }),
   )
   ringPad.rotation.x = -Math.PI / 2
   ringPad.position.set(0, Y.terrace + 0.007, 2.95)
   g.add(ringPad)
 
+  const ringEdge = new THREE.Mesh(
+    new THREE.RingGeometry(1.4, 1.47, 56, 1),
+    toon(0xc6ced6, { side: THREE.DoubleSide }),
+  )
+  ringEdge.rotation.x = -Math.PI / 2
+  ringEdge.position.set(0, Y.terrace + 0.007, 2.95)
+  g.add(ringEdge)
+
   /* ================= 建筑前绿篱 ================= */
-  hedgeRow(g, -3.3, 0.56, 2.2, 0.3)
+  // 左翼有侧门，绿篱断开让出通道
+  hedgeRow(g, -2.82, 0.56, 0.62, 0.3)
+  shrub(g, -4.36, 0.62, 0.17, 3)
+  shrub(g, -4.12, 0.5, 0.14, 5)
+
   hedgeRow(g, 3.3, 0.56, 2.2, 0.3)
 
   /* ================= 乔木 ================= */
@@ -581,16 +613,18 @@ export function buildGarden(root: THREE.Group): GardenApi {
   bikeRack(g, -3.52, 1.55)
 
   /* ================= 无障碍位 + 坡道 ================= */
-  const wcMark = new THREE.Group()
-  wcMark.position.set(2.18, Y.plaza + 0.007, 1.5)
-
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.014, 5, 18), toon(0x2f7fc4))
-  ring.rotation.x = -Math.PI / 2
-  wcMark.add(ring)
-
-  const markBar = box(0.032, 0.004, 0.2, 0x2f7fc4, { line: false })
-  markBar.position.set(0, 0.001, 0.02)
-  wcMark.add(markBar)
+  // 地面无障碍符号（原来只是"圆环 + 一横"，看起来像减号）
+  const wcMark = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.5, 0.5),
+    new THREE.MeshBasicMaterial({
+      map: groundMarkTexture('wheelchair', '#2f7fc4'),
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  )
+  wcMark.rotation.x = -Math.PI / 2
+  wcMark.position.set(2.18, Y.plaza + 0.008, 1.5)
   g.add(wcMark)
 
   const ramp = box(2.2, 0.04, 0.66, GP.walk, { line: true })

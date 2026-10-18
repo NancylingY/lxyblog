@@ -187,9 +187,9 @@ function drawIcon(
 export function glassCellTexture() {
   return canvasTexture(64, 256, (ctx, w, h) => {
     const g = ctx.createLinearGradient(0, 0, 0, h)
-    g.addColorStop(0, '#eaf6ff')
-    g.addColorStop(0.4, '#a9d4f3')
-    g.addColorStop(1, '#79afd9')
+    g.addColorStop(0, '#e2f3ff')
+    g.addColorStop(0.4, '#94c9ef')
+    g.addColorStop(1, '#69a2d2')
     ctx.fillStyle = g
     ctx.fillRect(0, 0, w, h)
 
@@ -477,6 +477,14 @@ export function screenUiTexture(seed = 0) {
 
     ctx.fillStyle = '#4aa3d8'
     ctx.fillRect(20, h - 54, w - 40, 32)
+  })
+}
+
+/** 地面标识（透明底，纯图形）：无障碍车位等 */
+export function groundMarkTexture(icon: PicoIcon, color = '#2f7fc4') {
+  return canvasTexture(160, 160, (ctx, w, h) => {
+    ctx.clearRect(0, 0, w, h)
+    drawIcon(ctx, icon, w / 2, h / 2, 118, color)
   })
 }
 

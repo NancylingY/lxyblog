@@ -86,7 +86,7 @@ export function buildInterior(root: THREE.Group): InteriorApi {
   const floor = box(x1 - x0, 0.06, z1 - z0, IP.floor, {
     line: false,
     emissive: 0x3a4048,
-    emissiveIntensity: 0.12,
+    emissiveIntensity: 0.22,
   })
   floor.position.set(cx, fy - 0.03, cz)
   g.add(floor)
@@ -131,40 +131,31 @@ export function buildInterior(root: THREE.Group): InteriorApi {
     g.add(frame)
   })
 
-  // 室内补光：让玻璃内侧明显亮于室外阴影
-  ;[
-    [-1.4, -0.7],
-    [1.4, -0.7],
-    [0, -1.8],
-    [-1.4, -2.9],
-    [1.4, -2.9],
-  ].forEach(([lx, lz]) => {
-    const light = new THREE.PointLight(0xe8f5ff, 3.6, 4.8, 1.2)
-    light.position.set(lx, ceil - 0.16, lz)
-    g.add(light)
-  })
+  // 注意：这里**不能**用 PointLight。点光源没有遮挡，会直接照亮外墙内侧，
+  // 在正/背面墙上投出一圈圈圆形光斑（三渲二下尤其明显）。
+  // 室内亮度改为：吊顶灯板（MeshBasic）+ 地面/墙面的自发光。
 
   /* ================= 内墙衬板 ================= */
   const backInner = box(x1 - x0, HL.ground - 0.1, 0.03, IP.wall, {
     line: false,
-    emissive: 0x4e565f,
-    emissiveIntensity: 0.22,
+    emissive: 0x5a636d,
+    emissiveIntensity: 0.3,
   })
   backInner.position.set(cx, HL.ground / 2, z0 + 0.015)
   g.add(backInner)
 
   const leftInner = box(0.03, HL.ground - 0.1, z1 - z0, IP.wall, {
     line: false,
-    emissive: 0x4e565f,
-    emissiveIntensity: 0.22,
+    emissive: 0x5a636d,
+    emissiveIntensity: 0.3,
   })
   leftInner.position.set(x0 + 0.015, HL.ground / 2, cz)
   g.add(leftInner)
 
   const rightInner = box(0.03, HL.ground - 0.1, z1 - z0, IP.wall, {
     line: false,
-    emissive: 0x4e565f,
-    emissiveIntensity: 0.22,
+    emissive: 0x5a636d,
+    emissiveIntensity: 0.3,
   })
   rightInner.position.set(x1 - 0.015, HL.ground / 2, cz)
   g.add(rightInner)
