@@ -11,28 +11,52 @@ const scrolled = ref(false)
 const menuOpen = ref(false)
 const { t, profile } = useResume()
 
-const links = computed(() => [
-  { to: '/', hash: '#about', label: t.value.navAbout },
-  { to: '/', hash: '#skills', label: t.value.navSkills },
-  { to: '/', hash: '#projects', label: t.value.navProjects },
-  { to: '/', hash: '#contact', label: t.value.navContact },
+interface NavItem {
+  /** 首页锚点 */
+  hash?: string
+  /** 独立页面路由 */
+  to?: string
+  label: string
+}
+
+const links = computed<NavItem[]>(() => [
+  { hash: '#about', label: t.value.navAbout },
+  { hash: '#skills', label: t.value.navSkills },
+  { hash: '#projects', label: t.value.navProjects },
+  { hash: '#contact', label: t.value.navContact },
+  { to: '/other', label: t.value.navOther },
 ])
+
+function isActive(link: NavItem) {
+  return !!link.to && route.path === link.to
+}
 
 function onScroll() {
   scrolled.value = window.scrollY > 24
 }
 
-async function goTo(link: { to: string; hash: string }) {
+async function goTo(link: NavItem) {
   menuOpen.value = false
+
+  // 独立页面：直接跳转
+  if (link.to && !link.hash) {
+    if (route.path === link.to) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      await router.push(link.to)
+      window.scrollTo({ top: 0 })
+    }
+    return
+  }
 
   // 首页锚点：已在本页直接滚动，否则先回首页再滚动
   if (route.path === '/') {
-    scrollToHash(link.hash)
+    scrollToHash(link.hash!)
     return
   }
   await router.push('/')
   await nextTick()
-  setTimeout(() => scrollToHash(link.hash), 80)
+  setTimeout(() => scrollToHash(link.hash!), 80)
 }
 
 onMounted(() => {
@@ -58,9 +82,10 @@ onBeforeUnmount(() => {
         <nav class="nav__links" aria-label="主导航">
           <a
             v-for="(link, i) in links"
-            :key="link.hash"
+            :key="link.hash || link.to"
             href="javascript:void(0)"
             class="nav__link"
+            :class="{ 'nav__link--active': isActive(link) }"
             @click="goTo(link)"
           >
             <span class="nav__link-index">0{{ i + 1 }}</span>
@@ -86,16 +111,14 @@ onBeforeUnmount(() => {
     <div class="nav__mobile" :class="{ 'nav__mobile--open': menuOpen }">
       <a
         v-for="link in links"
-        :key="link.hash"
+        :key="link.hash || link.to"
         href="javascript:void(0)"
         class="nav__mobile-link"
+        :class="{ 'nav__mobile-link--active': isActive(link) }"
         @click="goTo(link)"
       >
         {{ link.label }}
       </a>
-      <div class="nav__mobile-lang">
-        <LanguageSwitcher />
-      </div>
     </div>
   </header>
 </template>
@@ -168,12 +191,16 @@ onBeforeUnmount(() => {
 
 .nav__link {
   position: relative;
-  padding: 8px 14px;
+  padding: 8px 12px;
   font-family: var(--font-mono);
   font-size: 14px;
   color: var(--ink-dim);
   border-radius: var(--radius-sm);
-  transition: color 0.2s ease, background 0.2s ease;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.18s ease;
+}
+
+.nav__link:active {
+  transform: scale(0.94);
 }
 
 .nav__link:hover,
@@ -210,7 +237,7 @@ onBeforeUnmount(() => {
   display: none;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 860px) {
   .nav__links {
     display: none;
   }
@@ -253,8 +280,9 @@ onBeforeUnmount(() => {
     color: var(--accent);
   }
 
-  .nav__mobile-lang {
-    margin-top: 12px;
+  .nav__mobile-link--active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
   }
 }
 </style>

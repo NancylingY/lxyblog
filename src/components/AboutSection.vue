@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useResume } from '../data/resume'
+import CreativeTerminal from './CreativeTerminal.vue'
 
-const { t, advantages, education } = useResume()
+const { t, advantages } = useResume()
 
 const el = ref<HTMLElement | null>(null)
 const visible = ref(false)
@@ -49,32 +50,9 @@ onBeforeUnmount(() => observer?.disconnect())
           </ul>
         </div>
 
-        <!-- 教育经历 -->
-        <div class="card about__card reveal" :class="{ 'is-visible': visible }" style="transition-delay: 0.1s">
-          <h3 class="about__card-title">
-            <span class="prompt">$</span> {{ t.aboutEducation }}
-          </h3>
-
-          <div class="edu">
-            <div class="edu__school">
-              <span class="edu__name">{{ education.school }}</span>
-              <span class="edu__period">{{ education.period }}</span>
-            </div>
-            <p class="edu__meta">
-              {{ education.degree }} · {{ education.major }}
-            </p>
-            <div class="edu__rank">
-              <span class="edu__rank-badge">{{ education.rank }}</span>
-              <span class="edu__rank-label">{{ t.eduRankLabel }}</span>
-            </div>
-          </div>
-
-          <div class="edu__courses">
-            <span class="edu__courses-label">{{ t.eduCoursesLabel }}</span>
-            <div class="edu__course-tags">
-              <span v-for="c in education.courses" :key="c" class="tag tag--neutral">{{ c }}</span>
-            </div>
-          </div>
+        <!-- 创意组件：终端会话（点击可直接跳过打字） -->
+        <div class="about__term reveal" :class="{ 'is-visible': visible }" style="transition-delay: 0.1s">
+          <CreativeTerminal />
         </div>
       </div>
     </div>
@@ -84,9 +62,9 @@ onBeforeUnmount(() => observer?.disconnect())
 <style scoped>
 .about__grid {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .about__card {
@@ -128,102 +106,9 @@ onBeforeUnmount(() => observer?.disconnect())
   flex-shrink: 0;
 }
 
-/* 教育 */
-.edu {
-  border-left: 2px solid var(--line-bright);
-  padding-left: 20px;
-  margin-bottom: 24px;
-  position: relative;
-}
-
-.edu::before {
-  content: '';
-  position: absolute;
-  left: -6px;
-  top: 4px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: var(--glow);
-}
-
-.edu__school {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 6px;
-}
-
-.edu__name {
-  font-family: var(--font-mono);
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.edu__period {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--ink-faint);
-}
-
-.edu__meta {
-  font-size: 14px;
-  margin-bottom: 14px;
-}
-
-.edu__rank {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--amber-soft);
-  border: 1px solid rgba(255, 180, 84, 0.3);
-  border-radius: 999px;
-  padding: 4px 12px;
-}
-
-.edu__rank-badge {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--amber);
-}
-
-.edu__rank-label {
-  font-size: 12px;
-  color: var(--ink-dim);
-}
-
-.edu__courses-label {
-  display: block;
-  font-size: 12px;
-  color: var(--ink-faint);
-  margin-bottom: 10px;
-  font-family: var(--font-mono);
-}
-
-.edu__course-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.tag {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  padding: 5px 11px;
-  border-radius: 6px;
-  border: 1px solid var(--line);
-  color: var(--ink-dim);
-  background: var(--bg-1);
-}
-
-.tag--neutral:hover {
-  border-color: var(--line-bright);
-  color: var(--ink);
+/* 终端组件外壳：与左侧卡片同高 */
+.about__term {
+  min-width: 0;
 }
 
 @media (max-width: 860px) {

@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import OtherView from '../views/OtherView.vue'
 
 const router = createRouter({
   // hash 模式：GitHub Pages 静态托管下刷新/直达子路径不会 404
@@ -15,6 +16,18 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+    },
+    {
+      path: '/other',
+      name: 'other',
+      component: OtherView,
+    },
+    {
+      // 3D 微缩场景：全屏、无 UI，懒加载 three.js
+      path: '/konbini',
+      name: 'konbini',
+      component: () => import('../views/KonbiniView.vue'),
+      meta: { bare: true },
     },
     {
       // 项目已合并进首页，旧路径重定向到首页项目锚点

@@ -10,6 +10,7 @@ export interface Translation {
   navSkills: string
   navProjects: string
   navContact: string
+  navOther: string
   navHome: string
   switchLang: string
 
@@ -59,6 +60,18 @@ export interface Translation {
   contactCopied: string
   contactCopy: string
 
+  /** Other 页面 */
+  otherTitle: string
+  otherSub: string
+  konbiniTitle: string
+  konbiniTitleEn: string
+  konbiniDesc: string
+  konbiniStatus: string
+  konbiniTags: string[]
+  konbiniHint: string
+  konbiniEnter: string
+  back: string
+
   footerBuilt: string
 }
 
@@ -67,6 +80,7 @@ const zh: Translation = {
   navSkills: '技能',
   navProjects: '项目',
   navContact: '联系',
+  navOther: '其他',
   navHome: '回到首页',
   switchLang: '切换语言',
 
@@ -111,6 +125,18 @@ const zh: Translation = {
   contactCopied: '已复制',
   contactCopy: '复制',
 
+  otherTitle: '其他',
+  otherSub: '工作与学习之外，还留了一块自留地——一些视觉实验、小玩意，和正在慢慢长出来的东西。',
+  konbiniTitle: '日式便利店',
+  konbiniTitleEn: 'Konbini',
+  konbiniDesc:
+    '雨夜街角的日式便利店微缩场景。三渲二卡通渲染，湿路面拉出灯光倒影，店内暖光与室外冷雨形成对比。货架、冷柜、关东煮、收银台一应俱全；雨丝、屋檐滴水、积水涟漪、自动门开合全部实时演算。拖拽旋转、滚轮缩放，可绕场景自由观察。',
+  konbiniStatus: '可交互',
+  konbiniTags: ['Three.js', '三渲二渲染', '雨夜街角', '自由视角', '微缩场景'],
+  konbiniHint: '当前为占位预览 · 3D 模型制作中',
+  konbiniEnter: '点击进入 3D 场景',
+  back: '返回',
+
   footerBuilt: 'Built with Vue 3 + Vite',
 }
 
@@ -119,6 +145,7 @@ const en: Translation = {
   navSkills: 'Skills',
   navProjects: 'Projects',
   navContact: 'Contact',
+  navOther: 'Other',
   navHome: 'Back to home',
   switchLang: 'Switch language',
 
@@ -162,6 +189,18 @@ const en: Translation = {
   contactStatusValue: 'Online · Open to chat',
   contactCopied: 'Copied',
   contactCopy: 'Copy',
+
+  otherTitle: 'Other',
+  otherSub: 'Beyond work and study — a little corner for visual experiments, small toys, and things slowly growing.',
+  konbiniTitle: 'Japanese Konbini',
+  konbiniTitleEn: '日式便利店',
+  konbiniDesc:
+    'A miniature konbini on a rainy night street corner. Cel-shaded, with wet asphalt pulling light into long reflections and warm interior glow against the cold rain outside. Shelves, coolers, oden pot and counter all modeled; rain, awning drips, puddle ripples and the sliding door are all real-time. Drag to orbit, scroll to zoom.',
+  konbiniStatus: 'Interactive',
+  konbiniTags: ['Three.js', 'Cel Shading', 'Rainy Night', 'Orbit View', 'Diorama'],
+  konbiniHint: 'Placeholder preview · 3D model in progress',
+  konbiniEnter: 'Enter the 3D scene',
+  back: 'Back',
 
   footerBuilt: 'Built with Vue 3 + Vite',
 }

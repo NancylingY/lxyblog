@@ -201,7 +201,7 @@ export const navLinks = [
 
 /** 响应式数据源：切换语言后所有内容自动切换 */
 export function useResume() {
-  const { isZh } = useI18n()
+  const { locale, isZh } = useI18n()
 
   const t = computed(() => getTranslations(isZh.value ? 'zh' : 'en'))
 
@@ -224,7 +224,7 @@ export function useResume() {
 
   const projects = computed(() => (isZh.value ? baseProjects : enContent.projects))
 
-  return { t, profile, advantages, education, skills, projects }
+  return { t, locale, profile, advantages, education, skills, projects }
 }
 
 // —— 原始中文数据（保持原有导出名向后兼容，组件请改用 useResume）——
