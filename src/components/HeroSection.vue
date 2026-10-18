@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import ParticleField from './ParticleField.vue'
-import { profile } from '../data/resume'
+import { useResume } from '../data/resume'
 import { scrollToHash } from '../utils/scroll'
+
+const { t, profile } = useResume()
 </script>
 
 <template>
@@ -10,32 +12,32 @@ import { scrollToHash } from '../utils/scroll'
       <!-- 左侧：自我介绍 -->
       <div class="hero__intro">
         <p class="hero__eyebrow">
-          <span class="hero__eyebrow-dot" /> {{ profile.role }} · 数据分析 · {{ profile.enName }}
+          <span class="hero__eyebrow-dot" /> {{ profile.role }} · {{ profile.enName }}
         </p>
         <h1 class="hero__title">
-          你好，我是
+          {{ t.heroHello }}
           <span class="hero__name">{{ profile.name }}</span>
         </h1>
         <p class="hero__slogan">{{ profile.slogan }}</p>
         <p class="hero__desc">{{ profile.intro }}</p>
 
         <div class="hero__actions">
-          <a class="btn btn--primary" href="javascript:void(0)" @click="scrollToHash('#projects')">查看作品</a>
-          <a class="btn btn--ghost" href="javascript:void(0)" @click="scrollToHash('#about')">关于我</a>
+          <a class="btn btn--primary" href="javascript:void(0)" @click="scrollToHash('#projects')">{{ t.heroViewWork }}</a>
+          <a class="btn btn--ghost" href="javascript:void(0)" @click="scrollToHash('#about')">{{ t.heroAboutMe }}</a>
         </div>
 
         <ul class="hero__stats">
           <li class="hero__stat">
             <span class="hero__stat-num">20+</span>
-            <span class="hero__stat-label">技术栈</span>
+            <span class="hero__stat-label">{{ t.statStacks }}</span>
           </li>
           <li class="hero__stat">
             <span class="hero__stat-num">6</span>
-            <span class="hero__stat-label">个人项目</span>
+            <span class="hero__stat-label">{{ t.statProjects }}</span>
           </li>
           <li class="hero__stat">
             <span class="hero__stat-num">3</span>
-            <span class="hero__stat-label">技术方向</span>
+            <span class="hero__stat-label">{{ t.statDirections }}</span>
           </li>
         </ul>
       </div>
@@ -43,12 +45,12 @@ import { scrollToHash } from '../utils/scroll'
       <!-- 右侧：创意小组件 -->
       <div class="hero__visual">
         <ParticleField />
-        <p class="hero__visual-caption">// 代码之外，也有星空</p>
+        <p class="hero__visual-caption">{{ t.heroCaption }}</p>
       </div>
     </div>
 
       <a class="hero__scroll" href="javascript:void(0)" aria-label="向下滚动" @click="scrollToHash('#about')">
-      <span class="hero__scroll-text">scroll</span>
+      <span class="hero__scroll-text">{{ t.heroScroll }}</span>
       <span class="hero__scroll-line" />
     </a>
   </section>

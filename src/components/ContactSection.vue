@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { profile } from '../data/resume'
+import { useResume } from '../data/resume'
+
+const { t, profile } = useResume()
 
 const el = ref<HTMLElement | null>(null)
 const visible = ref(false)
@@ -24,7 +26,7 @@ onBeforeUnmount(() => observer?.disconnect())
 
 async function copyEmail() {
   try {
-    await navigator.clipboard.writeText(profile.email)
+    await navigator.clipboard.writeText(profile.value.email)
     copied.value = true
     setTimeout(() => (copied.value = false), 1800)
   } catch {
@@ -33,11 +35,11 @@ async function copyEmail() {
 }
 
 function callPhone() {
-  window.location.href = `tel:${profile.phone}`
+  window.location.href = `tel:${profile.value.phone}`
 }
 
 function mailTo() {
-  window.location.href = `mailto:${profile.email}`
+  window.location.href = `mailto:${profile.value.email}`
 }
 </script>
 
@@ -46,8 +48,8 @@ function mailTo() {
     <div class="container">
       <div class="section-head reveal" :class="{ 'is-visible': visible }">
         <span class="section-label">~/contact</span>
-        <h2 class="section-title">保持联系</h2>
-        <p class="section-sub">欢迎交流技术、项目合作，或任何有趣的想法。</p>
+        <h2 class="section-title">{{ t.contactTitle }}</h2>
+        <p class="section-sub">{{ t.contactSub }}</p>
       </div>
 
       <div class="contact__panel card reveal" :class="{ 'is-visible': visible }">
@@ -55,24 +57,24 @@ function mailTo() {
         <div class="contact__intro">
           <p class="contact__line contact__line--prompt">
             <span class="prompt">guest@dev:~$</span>
-            <span class="contact__cmd">open contact --now</span>
+            <span class="contact__cmd">{{ t.contactCmd }}</span>
           </p>
           <p class="contact__big">
-            期待与你一起<br />
-            <span class="contact__accent">把想法变成产品</span>
+            {{ t.contactBig1 }}<br />
+            <span class="contact__accent">{{ t.contactBig2 }}</span>
           </p>
           <p class="contact__desc">
-            无论是技术交流、项目合作还是单纯的闲聊，都欢迎随时找我，回复通常在当天。
+            {{ t.contactDesc }}
           </p>
 
           <div class="contact__actions">
             <button class="btn btn--primary" @click="mailTo">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
-              发送邮件
+              {{ t.contactMail }}
             </button>
             <button class="btn btn--ghost" @click="callPhone">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" stroke-linejoin="round" /></svg>
-              拨打电话
+              {{ t.contactCall }}
             </button>
           </div>
         </div>
@@ -82,18 +84,18 @@ function mailTo() {
           <a class="contact__row" :href="`mailto:${profile.email}`" @click.prevent="mailTo">
             <span class="contact__row-icon">@</span>
             <span class="contact__row-body">
-              <span class="contact__row-label">邮箱</span>
+              <span class="contact__row-label">{{ t.contactEmail }}</span>
               <span class="contact__row-value">{{ profile.email }}</span>
             </span>
-            <button class="contact__copy" :title="copied ? '已复制' : '复制'" @click.stop="copyEmail">
-              {{ copied ? '✓' : '复制' }}
+            <button class="contact__copy" :title="copied ? t.contactCopied : t.contactCopy" @click.stop="copyEmail">
+              {{ copied ? '✓' : t.contactCopy }}
             </button>
           </a>
 
           <a class="contact__row" :href="`tel:${profile.phone}`" @click.prevent="callPhone">
             <span class="contact__row-icon">#</span>
             <span class="contact__row-body">
-              <span class="contact__row-label">电话</span>
+              <span class="contact__row-label">{{ t.contactPhone }}</span>
               <span class="contact__row-value">{{ profile.phone }}</span>
             </span>
           </a>
@@ -101,16 +103,16 @@ function mailTo() {
           <div class="contact__row">
             <span class="contact__row-icon">◎</span>
             <span class="contact__row-body">
-              <span class="contact__row-label">坐标</span>
-              <span class="contact__row-value">广东 · 广州</span>
+              <span class="contact__row-label">{{ t.contactLocation }}</span>
+              <span class="contact__row-value">{{ t.contactLocationValue }}</span>
             </span>
           </div>
 
           <div class="contact__row">
             <span class="contact__row-icon">♪</span>
             <span class="contact__row-body">
-              <span class="contact__row-label">状态</span>
-              <span class="contact__row-value contact__row-value--live">在线 · 乐于交流</span>
+              <span class="contact__row-label">{{ t.contactStatus }}</span>
+              <span class="contact__row-value contact__row-value--live">{{ t.contactStatusValue }}</span>
             </span>
             <span class="contact__live-dot" />
           </div>
@@ -125,7 +127,7 @@ function mailTo() {
         <span class="prompt">~</span> {{ profile.name }} · {{ profile.role }}
       </p>
       <p class="footer__meta">
-        © {{ new Date().getFullYear() }} {{ profile.enName }} · Built with Vue 3 + Vite
+        © {{ new Date().getFullYear() }} {{ profile.enName }} · {{ t.footerBuilt }}
       </p>
     </div>
   </footer>

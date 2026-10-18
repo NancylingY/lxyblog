@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { profile } from '../data/resume'
+import { useResume } from '../data/resume'
 import { scrollToHash } from '../utils/scroll'
+import LanguageSwitcher from './LanguageSwitcher.vue'
 
 const route = useRoute()
 const router = useRouter()
 const scrolled = ref(false)
 const menuOpen = ref(false)
+const { t, profile } = useResume()
 
-const links = [
-  { to: '/', hash: '#about', label: '关于' },
-  { to: '/', hash: '#skills', label: '技能' },
-  { to: '/', hash: '#projects', label: '项目' },
-  { to: '/', hash: '#contact', label: '联系' },
-]
+const links = computed(() => [
+  { to: '/', hash: '#about', label: t.value.navAbout },
+  { to: '/', hash: '#skills', label: t.value.navSkills },
+  { to: '/', hash: '#projects', label: t.value.navProjects },
+  { to: '/', hash: '#contact', label: t.value.navContact },
+])
 
 function onScroll() {
   scrolled.value = window.scrollY > 24
@@ -52,41 +54,48 @@ onBeforeUnmount(() => {
         <span class="nav__brand-cursor">_</span>
       </router-link>
 
-      <nav class="nav__links" aria-label="主导航">
-        <a
-          v-for="(link, i) in links"
-          :key="link.label"
-          href="javascript:void(0)"
-          class="nav__link"
-          @click="goTo(link)"
-        >
-          <span class="nav__link-index">0{{ i + 1 }}</span>
-          {{ link.label }}
-        </a>
-      </nav>
+      <div class="nav__right">
+        <nav class="nav__links" aria-label="主导航">
+          <a
+            v-for="(link, i) in links"
+            :key="link.hash"
+            href="javascript:void(0)"
+            class="nav__link"
+            @click="goTo(link)"
+          >
+            <span class="nav__link-index">0{{ i + 1 }}</span>
+            {{ link.label }}
+          </a>
+        </nav>
 
-      <button
-        class="nav__toggle"
-        :aria-expanded="menuOpen"
-        aria-label="切换菜单"
-        @click="menuOpen = !menuOpen"
-      >
-        <span />
-        <span />
-        <span />
-      </button>
+        <LanguageSwitcher />
+
+        <button
+          class="nav__toggle"
+          :aria-expanded="menuOpen"
+          aria-label="切换菜单"
+          @click="menuOpen = !menuOpen"
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      </div>
     </div>
 
     <div class="nav__mobile" :class="{ 'nav__mobile--open': menuOpen }">
       <a
         v-for="link in links"
-        :key="link.label"
+        :key="link.hash"
         href="javascript:void(0)"
         class="nav__mobile-link"
         @click="goTo(link)"
       >
         {{ link.label }}
       </a>
+      <div class="nav__mobile-lang">
+        <LanguageSwitcher />
+      </div>
     </div>
   </header>
 </template>
@@ -149,6 +158,12 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.nav__right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .nav__link {
@@ -236,6 +251,10 @@ onBeforeUnmount(() => {
 
   .nav__mobile-link:hover {
     color: var(--accent);
+  }
+
+  .nav__mobile-lang {
+    margin-top: 12px;
   }
 }
 </style>

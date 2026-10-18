@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { skills } from '../data/resume'
+import { useResume } from '../data/resume'
+
+const { t, skills } = useResume()
 
 const el = ref<HTMLElement | null>(null)
 const visible = ref(false)
@@ -27,8 +29,8 @@ onBeforeUnmount(() => observer?.disconnect())
     <div class="container">
       <div class="section-head reveal" :class="{ 'is-visible': visible }">
         <span class="section-label">~/skills</span>
-        <h2 class="section-title">技术栈</h2>
-        <p class="section-sub">从后端服务到前端界面，再到数据处理，覆盖完整交付链路。</p>
+        <h2 class="section-title">{{ t.skillsTitle }}</h2>
+        <p class="section-sub">{{ t.skillsSub }}</p>
       </div>
 
       <div class="skills__grid">

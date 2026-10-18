@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { advantages, education } from '../data/resume'
+import { useResume } from '../data/resume'
+
+const { t, advantages, education } = useResume()
 
 const el = ref<HTMLElement | null>(null)
 const visible = ref(false)
@@ -27,9 +29,9 @@ onBeforeUnmount(() => observer?.disconnect())
     <div class="container">
       <div class="section-head reveal" :class="{ 'is-visible': visible }">
         <span class="section-label">~/about</span>
-        <h2 class="section-title">关于我</h2>
+        <h2 class="section-title">{{ t.aboutTitle }}</h2>
         <p class="section-sub">
-          一名正在成长的全栈开发者，后端方向为主，兼具前端与大数据分析能力。
+          {{ t.aboutSub }}
         </p>
       </div>
 
@@ -37,7 +39,7 @@ onBeforeUnmount(() => observer?.disconnect())
         <!-- 个人优势 -->
         <div class="card about__card reveal" :class="{ 'is-visible': visible }">
           <h3 class="about__card-title">
-            <span class="prompt">$</span> 个人优势
+            <span class="prompt">$</span> {{ t.aboutAdvantages }}
           </h3>
           <ul class="about__list">
             <li v-for="item in advantages" :key="item" class="about__item">
@@ -50,7 +52,7 @@ onBeforeUnmount(() => observer?.disconnect())
         <!-- 教育经历 -->
         <div class="card about__card reveal" :class="{ 'is-visible': visible }" style="transition-delay: 0.1s">
           <h3 class="about__card-title">
-            <span class="prompt">$</span> 教育经历
+            <span class="prompt">$</span> {{ t.aboutEducation }}
           </h3>
 
           <div class="edu">
@@ -62,13 +64,13 @@ onBeforeUnmount(() => observer?.disconnect())
               {{ education.degree }} · {{ education.major }}
             </p>
             <div class="edu__rank">
-              <span class="edu__rank-badge">TOP {{ education.rank }}</span>
-              <span class="edu__rank-label">专业排名</span>
+              <span class="edu__rank-badge">{{ education.rank }}</span>
+              <span class="edu__rank-label">{{ t.eduRankLabel }}</span>
             </div>
           </div>
 
           <div class="edu__courses">
-            <span class="edu__courses-label">主修课程</span>
+            <span class="edu__courses-label">{{ t.eduCoursesLabel }}</span>
             <div class="edu__course-tags">
               <span v-for="c in education.courses" :key="c" class="tag tag--neutral">{{ c }}</span>
             </div>

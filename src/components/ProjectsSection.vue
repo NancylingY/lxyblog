@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { projects, type Project } from '../data/resume'
+import { useResume, type Project } from '../data/resume'
+
+const { t, projects } = useResume()
 
 const activeId = ref<string | null>(null)
 const el = ref<HTMLElement | null>(null)
@@ -40,8 +42,8 @@ function ensurePlay(e: Event) {
     <div class="container">
       <div class="section-head reveal" :class="{ 'is-visible': visible }">
         <span class="section-label">~/projects</span>
-        <h2 class="section-title">项目作品</h2>
-        <p class="section-sub">点击卡片查看项目详情与技术栈。</p>
+        <h2 class="section-title">{{ t.projectsTitle }}</h2>
+        <p class="section-sub">{{ t.projectsSub }}</p>
       </div>
 
       <div class="projects__grid">
@@ -102,7 +104,7 @@ function ensurePlay(e: Event) {
             </div>
 
             <button class="project__toggle" :aria-expanded="activeId === project.id">
-              {{ activeId === project.id ? '收起详情' : '查看详情' }}
+              {{ activeId === project.id ? t.projectCollapse : t.projectDetail }}
               <span class="project__toggle-arrow" :class="{ 'is-open': activeId === project.id }">↓</span>
             </button>
 

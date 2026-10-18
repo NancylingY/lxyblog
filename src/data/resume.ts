@@ -1,7 +1,13 @@
 /**
  * 博客数据 —— 全部内容的单一数据源
  * 修改这里，页面内容会同步更新
+ *
+ * 中英文：`profile`/`education` 等原始字段仍为中文，英文版见 `translations.ts`。
+ * 组件请使用下方导出的 `useResume()` 响应式组合函数，切换语言后内容自动更新。
  */
+import { computed } from 'vue'
+import { useI18n } from '../i18n'
+import { enContent, getTranslations } from './translations'
 
 export interface Project {
   id: string
@@ -19,8 +25,8 @@ export interface Project {
 }
 
 export const profile = {
-  name: '李家骏',
-  enName: 'Li Jiajun',
+  name: 'Yi',
+  enName: 'Lee',
   age: 23,
   gender: '男',
   phone: '14749334143',
@@ -192,3 +198,38 @@ export const navLinks = [
   { href: '#projects', label: '项目' },
   { href: '#contact', label: '联系' },
 ]
+
+/** 响应式数据源：切换语言后所有内容自动切换 */
+export function useResume() {
+  const { isZh } = useI18n()
+
+  const t = computed(() => getTranslations(isZh.value ? 'zh' : 'en'))
+
+  const profile = computed(() =>
+    isZh.value
+      ? { ...baseProfile }
+      : {
+          ...baseProfile,
+          role: enContent.role,
+          slogan: enContent.slogan,
+          intro: enContent.intro,
+        },
+  )
+
+  const advantages = computed(() => (isZh.value ? baseAdvantages : enContent.advantages))
+
+  const education = computed(() => (isZh.value ? baseEducation : enContent.education))
+
+  const skills = computed(() => (isZh.value ? baseSkills : enContent.skills))
+
+  const projects = computed(() => (isZh.value ? baseProjects : enContent.projects))
+
+  return { t, profile, advantages, education, skills, projects }
+}
+
+// —— 原始中文数据（保持原有导出名向后兼容，组件请改用 useResume）——
+const baseProfile = profile
+const baseAdvantages = advantages
+const baseEducation = education
+const baseSkills = skills
+const baseProjects = projects
