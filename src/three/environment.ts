@@ -2,7 +2,7 @@
  * 环境：微缩底座、人行道板块、湿路面、斑马线、排水沟、积水
  */
 import * as THREE from 'three'
-import { C, box, toon, additiveMat, sheenTexture, outline } from './toon'
+import { C, box, toon, additiveMat, sheenTexture, radialFadeTexture, outline } from './toon'
 
 /** 场景统一坐标系（单位 ≈ 米），供其它模块共享 */
 export const LAYOUT = {
@@ -37,7 +37,12 @@ export function addLightPool(
   y = 0.028,
 ) {
   const geo = new THREE.PlaneGeometry(w, d)
-  const mesh = new THREE.Mesh(geo, additiveMat(color, opacity))
+  // 关键：必须带径向渐变贴图，否则加法混合的纯色面片就是一块硬边矩形
+  const mat = additiveMat(color, opacity)
+  mat.map = radialFadeTexture()
+  mat.needsUpdate = true
+
+  const mesh = new THREE.Mesh(geo, mat)
   mesh.rotation.x = -Math.PI / 2
   mesh.position.set(x, y, z)
   mesh.renderOrder = 3
@@ -212,7 +217,7 @@ export function buildEnvironment(root: THREE.Group) {
   /* ================= 井盖 ================= */
   const manhole = new THREE.Mesh(
     new THREE.CylinderGeometry(0.32, 0.32, 0.03, 24),
-    toon(0x28323f),
+    toon(0x3d4857),
   )
   manhole.position.set(0.4, 0.03, 3.6)
   outline(manhole, 40)
@@ -235,9 +240,9 @@ export function buildEnvironment(root: THREE.Group) {
   puddleDefs.forEach((p) => {
     const geo = new THREE.CircleGeometry(1, 26)
     const mat = new THREE.MeshBasicMaterial({
-      color: 0x0b1522,
+      color: 0x24384d,
       transparent: true,
-      opacity: 0.92,
+      opacity: 0.78,
       depthWrite: false,
     })
     const m = new THREE.Mesh(geo, mat)
@@ -252,9 +257,9 @@ export function buildEnvironment(root: THREE.Group) {
       new THREE.PlaneGeometry(p.rx * 2.1, p.rz * 2.1),
       new THREE.MeshBasicMaterial({
         map: sheenTexture(),
-        color: 0x8ec8ff,
+        color: 0x9ad2ff,
         transparent: true,
-        opacity: 0.42,
+        opacity: 0.55,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         toneMapped: false,
@@ -267,10 +272,6 @@ export function buildEnvironment(root: THREE.Group) {
 
     puddles.push(p)
   })
-
-  /* ================= 便利店门前的灯光反射 ================= */
-  addLightPool(root, 0.4, 1.15, 2.4, 1.5, 0xffcf8a, 0.3, 0.105)
-  addGlowDisc(root, 0.4, 1.25, 3.4, 0xffb96b, 0.34, 0.106)
 
   return { puddles }
 }

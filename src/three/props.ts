@@ -64,7 +64,7 @@ function vendingMachine(parent: THREE.Object3D, x: number, z: number, rotY = 0) 
   })
 
   // 贩卖机溢出的冷光
-  const light = new THREE.PointLight(0xbfe6ff, 3.2, 3.4, 1.6)
+  const light = new THREE.PointLight(0xbfe6ff, 2.6, 2.6, 1.7)
   light.position.set(0, 1.1, 0.5)
   g.add(light)
 
@@ -80,78 +80,130 @@ function bicycle(parent: THREE.Object3D, x: number, z: number, rotY = 0) {
 
   const frameColor = 0x4f9fd8
   const dark = 0x2b3442
+  const metal = 0x8d98a6
+  const R = 0.21
 
-  // 车轮
-  const wheelGeo = new THREE.TorusGeometry(0.21, 0.018, 6, 20)
-  const wheelMat = toon(dark)
-  ;[-0.44, 0.44].forEach((wx) => {
-    const wheel = new THREE.Mesh(wheelGeo, wheelMat)
-    wheel.position.set(wx, 0.22, 0)
+  /* ---------- 关键点（侧视 x-y 平面，车轮着地） ---------- */
+  const rear = { x: -0.42, y: R }
+  const front = { x: 0.42, y: R }
+  const bb = { x: -0.03, y: 0.19 } // 五通 / 中轴
+  const seatTop = { x: -0.14, y: 0.6 }
+  const headTop = { x: 0.3, y: 0.63 }
+  const headBot = { x: 0.34, y: 0.46 }
+
+  /** 在两点之间架一根圆管（圆柱默认沿 Y 轴） */
+  const rod = (
+    a: { x: number; y: number },
+    b: { x: number; y: number },
+    r: number,
+    color: number,
+  ) => {
+    const dx = b.x - a.x
+    const dy = b.y - a.y
+    const len = Math.hypot(dx, dy)
+    const m = cyl(r, r, len, 7, color, { line: false })
+    m.position.set((a.x + b.x) / 2, (a.y + b.y) / 2, 0)
+    m.rotation.z = Math.atan2(dy, dx) - Math.PI / 2
+    g.add(m)
+    return m
+  }
+
+  /* ---------- 车轮 ---------- */
+  ;[rear, front].forEach((hub) => {
+    const wheel = new THREE.Mesh(new THREE.TorusGeometry(R, 0.017, 6, 22), toon(dark))
+    wheel.position.set(hub.x, hub.y, 0)
     outline(wheel, 40)
     g.add(wheel)
 
+    // 花鼓
+    const hubMesh = cyl(0.022, 0.022, 0.075, 8, metal, { line: false })
+    hubMesh.position.set(hub.x, hub.y, 0)
+    hubMesh.rotation.x = Math.PI / 2
+    g.add(hubMesh)
+
     // 辐条
     for (let i = 0; i < 6; i++) {
-      const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.006, 0.006), toon(0x8f9aa8, { transparent: true, opacity: 0.7 }))
-      spoke.position.set(wx, 0.22, 0)
+      const spoke = new THREE.Mesh(new THREE.BoxGeometry(R * 1.86, 0.0045, 0.0045), toon(metal))
+      spoke.position.set(hub.x, hub.y, 0)
       spoke.rotation.z = (i / 6) * Math.PI
       g.add(spoke)
     }
   })
 
-  // 车架
-  const bar1 = cyl(0.016, 0.016, 0.62, 6, frameColor, { line: false })
-  bar1.position.set(-0.06, 0.42, 0)
-  bar1.rotation.z = 0.5
-  g.add(bar1)
+  /* ---------- 车架：每一根都真正连到节点 ---------- */
+  rod(bb, seatTop, 0.017, frameColor) // 立管
+  rod(seatTop, headTop, 0.016, frameColor) // 上管
+  rod(bb, headBot, 0.017, frameColor) // 下管
+  rod(headBot, headTop, 0.018, frameColor) // 头管
+  rod(bb, rear, 0.012, frameColor) // 后下叉
+  rod(seatTop, rear, 0.011, frameColor) // 后上叉
+  rod(headBot, front, 0.013, metal) // 前叉
 
-  const bar2 = cyl(0.016, 0.016, 0.55, 6, frameColor, { line: false })
-  bar2.position.set(0.16, 0.42, 0)
-  bar2.rotation.z = -0.62
-  g.add(bar2)
+  /* ---------- 座杆 + 车座 ---------- */
+  rod(seatTop, { x: -0.15, y: 0.68 }, 0.012, metal)
 
-  const bar3 = cyl(0.014, 0.014, 0.5, 6, frameColor, { line: false })
-  bar3.position.set(-0.36, 0.34, 0)
-  bar3.rotation.z = 0.95
-  g.add(bar3)
-
-  // 座杆 + 车座
-  const seatPost = cyl(0.012, 0.012, 0.22, 6, 0x6a7484, { line: false })
-  seatPost.position.set(-0.2, 0.6, 0)
-  g.add(seatPost)
-
-  const seat = box(0.2, 0.05, 0.1, 0x222a36, { line: true })
-  seat.position.set(-0.2, 0.72, 0)
+  const seat = box(0.19, 0.032, 0.095, 0x222a36, { line: true })
+  seat.position.set(-0.16, 0.7, 0)
   g.add(seat)
 
-  // 车把
-  const stem = cyl(0.012, 0.012, 0.24, 6, 0x6a7484, { line: false })
-  stem.position.set(0.36, 0.68, 0)
-  g.add(stem)
+  /* ---------- 车把 ---------- */
+  rod(headTop, { x: 0.29, y: 0.73 }, 0.012, metal)
 
-  const handle = cyl(0.012, 0.012, 0.34, 6, dark, { line: false })
-  handle.position.set(0.36, 0.79, 0)
+  const handle = cyl(0.012, 0.012, 0.34, 8, dark, { line: false })
+  handle.position.set(0.29, 0.745, 0)
   handle.rotation.x = Math.PI / 2
   g.add(handle)
 
-  // 前车筐
-  const basket = box(0.24, 0.2, 0.26, 0xb9c4d0, { line: true, transparent: true, opacity: 0.85 })
-  basket.position.set(0.5, 0.6, 0)
+  ;[-1, 1].forEach((d) => {
+    const grip = cyl(0.016, 0.016, 0.085, 8, 0x3a4351, { line: false })
+    grip.position.set(0.29, 0.745, d * 0.155)
+    grip.rotation.x = Math.PI / 2
+    g.add(grip)
+  })
+
+  /* ---------- 中轴 + 曲柄 + 脚踏 ---------- */
+  const crank = cyl(0.042, 0.042, 0.028, 12, metal, { line: false })
+  crank.position.set(bb.x, bb.y, 0)
+  crank.rotation.x = Math.PI / 2
+  g.add(crank)
+
+  ;[1, -1].forEach((d) => {
+    const arm = box(0.016, 0.12, 0.012, 0x4a5464, { line: false })
+    arm.position.set(bb.x + 0.028, bb.y - d * 0.045, d * 0.05)
+    arm.rotation.z = d * 0.55
+    g.add(arm)
+
+    const pedal = box(0.085, 0.016, 0.05, 0x2b3442, { line: false })
+    pedal.position.set(bb.x + 0.085, bb.y - d * 0.105, d * 0.075)
+    g.add(pedal)
+  })
+
+  /* ---------- 前车筐 ---------- */
+  const basket = box(0.23, 0.15, 0.23, 0xa4b2c2, { line: true })
+  basket.position.set(0.48, 0.575, 0)
   g.add(basket)
 
-  // 挡泥板
-  const fender = new THREE.Mesh(
-    new THREE.TorusGeometry(0.24, 0.012, 4, 12, Math.PI * 0.7),
-    toon(0x8d98a6),
-  )
-  fender.position.set(0.44, 0.22, 0)
-  fender.rotation.z = 0.4
-  g.add(fender)
+  const basketRim = box(0.245, 0.02, 0.245, 0x8f9daf, { line: false })
+  basketRim.position.set(0.48, 0.655, 0)
+  g.add(basketRim)
 
-  // 支架
-  const stand = cyl(0.01, 0.01, 0.24, 5, 0x6a7484, { line: false })
-  stand.position.set(-0.1, 0.12, 0.1)
-  stand.rotation.x = 0.3
+  rod({ x: 0.42, y: 0.52 }, { x: 0.48, y: 0.52 }, 0.008, metal)
+
+  /* ---------- 挡泥板 ---------- */
+  ;[front, rear].forEach((hub) => {
+    const fender = new THREE.Mesh(
+      new THREE.TorusGeometry(R + 0.032, 0.011, 4, 14, Math.PI * 0.72),
+      toon(metal),
+    )
+    fender.position.set(hub.x, hub.y, 0)
+    fender.rotation.z = 0.45
+    g.add(fender)
+  })
+
+  /* ---------- 撑脚 ---------- */
+  const stand = cyl(0.009, 0.009, 0.21, 5, 0x6a7484, { line: false })
+  stand.position.set(-0.12, 0.105, 0.07)
+  stand.rotation.x = 0.32
   g.add(stand)
 
   parent.add(g)
@@ -278,13 +330,15 @@ function streetLamp(parent: THREE.Object3D, x: number, z: number, rotY = 0) {
   cone.position.set(-0.56, (H + 0.1) / 2, 0)
   g.add(cone)
 
-  const light = new THREE.PointLight(0xffd9a0, 6.5, 7.5, 1.4)
+  // 根因修复（toon.ts 渐变贴图下半段置 0）后，背光面不再接受直射光，
+  // 点光源不会在墙面/屋顶刷出同心圆环，可放心给街灯一个中等强度做局部照明。
+  const light = new THREE.PointLight(0xffd9a0, 3.5, 7.5, 1.4)
   light.position.set(-0.56, H - 0.1, 0)
   g.add(light)
 
   parent.add(g)
-  addLightPool(parent, x - 0.56, z, 3.2, 3.2, 0xffc887, 0.26, 0.1)
-  addGlowDisc(parent, x - 0.56, z, 4.6, 0xffb968, 0.24, 0.102)
+  addLightPool(parent, x - 0.56, z, 3.2, 3.2, 0xffc887, 0.34, 0.1)
+  addGlowDisc(parent, x - 0.56, z, 4.6, 0xffb968, 0.3, 0.102)
 
   return g
 }
@@ -568,6 +622,8 @@ function neighborBuilding(parent: THREE.Object3D) {
   }
 
   // 面向街道的窗户（二层）
+  // 楼体 x0=-4.85~x1=-3.72（宽 1.13），窗排总宽 1.02 → 每侧留 0.055 置中。
+  // 原来 x0+0.28 起步，左距 0.13 右缘却超出转角 0.07（窗框），整排偏右且穿出楼角。
   for (let row = 0; row < 2; row++) {
     for (let col = 0; col < 3; col++) {
       const lit = [0x2a3444, 0xffd79a, 0x33405a, 0xffc26b, 0x2a3444, 0x3a4557][row * 3 + col]
@@ -575,11 +631,11 @@ function neighborBuilding(parent: THREE.Object3D) {
         new THREE.PlaneGeometry(0.3, 0.42),
         new THREE.MeshBasicMaterial({ color: lit, toneMapped: false }),
       )
-      win.position.set(x0 + 0.28 + col * 0.36, SY + 1.7 + row * 1.1, z1 + 0.014)
+      win.position.set(x0 + 0.2 + col * 0.36, SY + 1.7 + row * 1.1, z1 + 0.014)
       g.add(win)
 
       const frame = box(0.34, 0.46, 0.02, 0x1f2733, { line: false })
-      frame.position.set(x0 + 0.28 + col * 0.36, SY + 1.7 + row * 1.1, z1 - 0.02)
+      frame.position.set(x0 + 0.2 + col * 0.36, SY + 1.7 + row * 1.1, z1 - 0.02)
       g.add(frame)
     }
   }
@@ -607,20 +663,23 @@ function neighborBuilding(parent: THREE.Object3D) {
 
   /* ---- 小巷内部 ---- */
   const alleyX = (x1 + SX0) / 2 // 巷道中心
-  // 空调外机必须贴墙：一台挂便利店左外墙，一台挂邻楼右外墙
-  acUnit(parent, SX0 - 0.15, SY + 1.55, -1.15, -Math.PI / 2)
-  acUnit(parent, x1 + 0.15, SY + 2.2, -2.45, Math.PI / 2)
+  // 空调外机必须贴墙：一台挂便利店左外墙，一台挂邻楼右外墙。
+  // 注意 z 要错开邻楼巷侧窗（窗在 z -2.6 / -1.4 / -0.2，各宽 0.4）：
+  // 邻楼那台放两窗之间的空档 -2.0（占 -2.31~-1.69），店墙那台放 -1.0，都不挡窗。
+  acUnit(parent, SX0 - 0.15, SY + 1.55, -1.0, -Math.PI / 2)
+  acUnit(parent, x1 + 0.15, SY + 2.2, -2.0, Math.PI / 2)
 
-  // 巷道地灯
+  // 巷道地灯（灯面自发光即可，不再挂 PointLight：
+  // 巷中点光源会把便利店左墙刷成一个硬边暖色圆团——卡通量化的截断圆，
+  // 从默认机位看就是交界处一团光晕。氛围交给 emissive 灯面 + 地面渐变光池）
   const alleyLampMat = new THREE.MeshBasicMaterial({ color: 0xffcf8a, toneMapped: false })
   const lamp = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.1), alleyLampMat)
   lamp.rotation.x = Math.PI / 2
   lamp.position.set(alleyX, SY + 2.6, -0.5)
   g.add(lamp)
 
-  const alleyLight = new THREE.PointLight(0xffcf8a, 2.4, 3.2, 1.6)
-  alleyLight.position.set(alleyX, SY + 2.4, -0.6)
-  parent.add(alleyLight)
+  // 灯光在地面的落点（径渐变，硬边会变成"荧光纸片"）
+  addLightPool(parent, alleyX, -0.5, 1.3, 1.3, 0xffc887, 0.26, 0.1)
 
   // 巷内垃圾桶
   const bin = box(0.34, 0.44, 0.34, 0x6d7582, { line: true })
@@ -649,8 +708,8 @@ let trafficLightRef: ReturnType<typeof trafficLight> | null = null
 export function buildProps(root: THREE.Group): PropsApi {
   /* --- 店外正面 --- */
   vendingMachine(root, -2.16, 0.98)
-  addLightPool(root, -2.16, 1.35, 1.5, 1.3, 0x9fd8ff, 0.22, 0.1)
-  addGlowDisc(root, -2.16, 1.45, 2.6, 0x7fc8ff, 0.2, 0.102)
+  addLightPool(root, -2.16, 1.35, 1.6, 1.4, 0x9fd8ff, 0.3, 0.1)
+  addGlowDisc(root, -2.16, 1.45, 2.6, 0x7fc8ff, 0.26, 0.102)
 
   umbrellaStand(root, -0.58, 1.02)
   trashBins(root, 1.5, 1.38)

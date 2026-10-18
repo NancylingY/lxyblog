@@ -424,11 +424,10 @@ function ceilingLights(parent: THREE.Object3D) {
     lights.push(light)
   })
 
-  // 靠门口的暖光补光：让近处货架与收银台更亮
-  const entryLight = new THREE.PointLight(0xffe0b0, 4, 5.6, 1.1)
-  entryLight.position.set(0.35, SY + 2.0, 0.25)
-  parent.add(entryLight)
-  lights.push(entryLight)
+  // 注：这里原本还有一盏 entryLight（门口补光）。
+  // 它离招牌背板只有 0.6，光线直接穿过招牌照亮其**外表面**，
+  // 在三渲二材质上被梯度贴图量化成一圈明显的圆斑。已删除，
+  // 门口亮度由 6 盏吊顶灯 + 招牌自发光承担。
 
   return lights
 }
@@ -746,6 +745,7 @@ export function buildStore(root: THREE.Group): StoreApi {
 
   /* ================= 屋顶 ================= */
   const roof = box(W + 0.12, 0.14, D + 0.12, 0x4e5a6c, { line: true })
+  roof.name = 'storeRoof'
   roof.position.set(CX, ROOF_Y + 0.07, CZ)
   g.add(roof)
 
@@ -1002,8 +1002,8 @@ export function buildStore(root: THREE.Group): StoreApi {
   g.add(haloRight)
 
   // 门口地面暖光溢出
-  addLightPool(root, 0.4, 1.12, 2.6, 1.7, 0xffc98a, 0.34, 0.1)
-  addGlowDisc(root, 0.4, 1.3, 4.0, 0xffb268, 0.3, 0.101)
+  addLightPool(root, 0.4, 1.12, 2.9, 1.9, 0xffc98a, 0.46, 0.1)
+  addGlowDisc(root, 0.4, 1.3, 4.2, 0xffb268, 0.36, 0.101)
 
   /* ================= 动画 ================= */
   function update(t: number, doorOpen: number) {

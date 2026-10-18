@@ -41,11 +41,20 @@ let gradTex: THREE.DataTexture | null = null
 
 function gradientMap() {
   if (gradTex) return gradTex
-  // 4 阶：深影 → 中影 → 亮部 → 高光，最近邻采样保证硬边
+  // 4 阶。最近邻采样保证硬边。
   // 注意：RGBA 每像素 4 字节，4 像素必须给满 16 个值，否则最亮档会取到无效数据
+  //
+  // ★ 下半段（前两阶）必须为 0，这是修"灯光漏到外墙/屋顶形成一圈圈圆斑"的根因：
+  // three.js 的 toon 着色器在 getGradientIrradiance 里对 dotNL **不做 clamp**，
+  // 直接 dotNL*0.5+0.5 映射到本贴图。于是：
+  //   dotNL > 0（光在正面）→ 采样上半段（216/255），正常卡通分层；
+  //   dotNL < 0（光在背面，本该全黑）→ 采样下半段 —— 若下半段有多个非零档位，
+  //   每个档位边界就是一圈硬环，任何穿墙/悬在表面上方的灯都会刷出同心圆。
+  // 下半段置 0 后，背光面完全不接受直射光，圆环/光包从根源消失；
+  // 上半段维持原样，全场正面着色与之前完全一致。
   const steps = [
-    62, 62, 62, 255,
-    150, 150, 150, 255,
+    0, 0, 0, 255,
+    0, 0, 0, 255,
     216, 216, 216, 255,
     255, 255, 255, 255,
   ]
@@ -403,6 +412,22 @@ export function sheenTexture() {
     ctx.fillRect(0, 0, w, h)
   })
   return sheenTex
+}
+
+/** 径向白色渐变：地面光池的柔化遮罩（硬边矩形会像"贴在地上的纸片"） */
+let radialFadeTex: THREE.Texture | null = null
+export function radialFadeTexture() {
+  if (radialFadeTex) return radialFadeTex
+  radialFadeTex = canvasTexture(128, 128, (ctx, w, h) => {
+    const g = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2)
+    g.addColorStop(0, 'rgba(255,255,255,0.92)')
+    g.addColorStop(0.35, 'rgba(255,255,255,0.58)')
+    g.addColorStop(0.68, 'rgba(255,255,255,0.18)')
+    g.addColorStop(1, 'rgba(255,255,255,0)')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, w, h)
+  })
+  return radialFadeTex
 }
 
 /** 雨滴沿玻璃滑落 */

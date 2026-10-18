@@ -98,29 +98,6 @@ function buildRain(root: THREE.Group, count = 900) {
   return mat
 }
 
-/* ================= 雨雾（贴近地面的低雾） ================= */
-function buildMist(root: THREE.Group) {
-  const mat = new THREE.MeshBasicMaterial({
-    color: 0x4a6a92,
-    transparent: true,
-    opacity: 0.05,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    side: THREE.DoubleSide,
-    toneMapped: false,
-  })
-  const layers: THREE.Mesh[] = []
-
-  for (let i = 0; i < 3; i++) {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(11, 11), mat)
-    m.rotation.x = -Math.PI / 2
-    m.position.y = 0.35 + i * 0.5
-    root.add(m)
-    layers.push(m)
-  }
-  return layers
-}
-
 /* ================= 屋檐滴水 ================= */
 function buildDrips(root: THREE.Group) {
   const drips: { mesh: THREE.Mesh; offset: number; speed: number; x: number }[] = []
@@ -195,7 +172,6 @@ function buildRipples(root: THREE.Group, puddles: Puddle[]) {
 
 export function buildWeather(root: THREE.Group, puddles: Puddle[]): WeatherApi {
   const rainMat = buildRain(root)
-  const mist = buildMist(root)
   const { drips, awningY } = buildDrips(root)
   const ripples = buildRipples(root, puddles)
 
@@ -222,11 +198,6 @@ export function buildWeather(root: THREE.Group, puddles: Puddle[]): WeatherApi {
       const s = 0.06 + phase * 0.7
       r.mesh.scale.set(s * (r.puddle.rx * 1.4), s * (r.puddle.rz * 1.4), 1)
       ;(r.mesh.material as THREE.MeshBasicMaterial).opacity = (1 - phase) * 0.34
-    })
-
-    // 雾层缓慢呼吸
-    mist.forEach((m, i) => {
-      m.position.y = 0.3 + i * 0.42 + Math.sin(t * 0.25 + i) * 0.06
     })
   }
 
