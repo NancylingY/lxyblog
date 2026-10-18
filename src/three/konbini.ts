@@ -67,18 +67,18 @@ export function createKonbiniScene(container: HTMLElement): () => void {
   controls.addEventListener('start', onStart)
 
   /* ================= 灯光 ================= */
-  scene.add(new THREE.AmbientLight(0x7d8fae, 0.4))
+  scene.add(new THREE.AmbientLight(0x7d8fae, 0.11))
 
-  const hemi = new THREE.HemisphereLight(0x5c7ba8, 0x0f141d, 0.48)
+  const hemi = new THREE.HemisphereLight(0x5c7ba8, 0x0f141d, 0.16)
   scene.add(hemi)
 
   // 冷色月光：给轮廓与投影方向
-  const moon = new THREE.DirectionalLight(0xa8c6ff, 1.25)
+  const moon = new THREE.DirectionalLight(0xa8c6ff, 0.34)
   moon.position.set(7, 11, 6)
   scene.add(moon)
 
   // 极弱的补光，避免背面纯黑一片
-  const fill = new THREE.DirectionalLight(0x4a6a96, 0.36)
+  const fill = new THREE.DirectionalLight(0x4a6a96, 0.1)
   fill.position.set(-8, 5, -6)
   scene.add(fill)
 

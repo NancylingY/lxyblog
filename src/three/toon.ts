@@ -42,7 +42,13 @@ let gradTex: THREE.DataTexture | null = null
 function gradientMap() {
   if (gradTex) return gradTex
   // 4 阶：深影 → 中影 → 亮部 → 高光，最近邻采样保证硬边
-  const steps = [56, 56, 56, 168, 168, 168, 235, 235, 235, 255, 255, 255]
+  // 注意：RGBA 每像素 4 字节，4 像素必须给满 16 个值，否则最亮档会取到无效数据
+  const steps = [
+    62, 62, 62, 255,
+    150, 150, 150, 255,
+    216, 216, 216, 255,
+    255, 255, 255, 255,
+  ]
   const data = new Uint8Array(steps)
   const tex = new THREE.DataTexture(data, 4, 1, THREE.RGBAFormat)
   tex.minFilter = THREE.NearestFilter

@@ -36,6 +36,33 @@ function enter() {
   router.push('/konbini')
 }
 
+/* 医院卡片：独立的视差状态 */
+const hrx = ref(-12)
+const hry = ref(-30)
+
+const hosStyle = computed(() => ({
+  '--hrx': `${hrx.value}deg`,
+  '--hry': `${hry.value}deg`,
+}))
+
+function onHosMove(e: MouseEvent) {
+  const el = e.currentTarget as HTMLElement
+  const r = el.getBoundingClientRect()
+  const px = (e.clientX - r.left) / r.width - 0.5
+  const py = (e.clientY - r.top) / r.height - 0.5
+  hrx.value = -12 - py * 14
+  hry.value = -30 + px * 24
+}
+
+function onHosLeave() {
+  hrx.value = -12
+  hry.value = -30
+}
+
+function enterHospital() {
+  router.push('/hospital')
+}
+
 onMounted(() => {
   requestAnimationFrame(() => (mounted.value = true))
 })
@@ -50,6 +77,7 @@ onMounted(() => {
         <p class="section-sub">{{ t.otherSub }}</p>
       </div>
 
+      <div class="other__grid">
       <!-- 日式便利店 · 3D 卡片 -->
       <article
         class="card konbini"
@@ -135,6 +163,71 @@ onMounted(() => {
           </div>
         </div>
       </article>
+
+      <!-- 现代综合医院 · 3D 卡片 -->
+      <article
+        class="card konbini konbini--hos"
+        role="link"
+        tabindex="0"
+        :aria-label="t.hospitalEnter"
+        @click="enterHospital"
+        @keydown.enter="enterHospital"
+        @keydown.space.prevent="enterHospital"
+      >
+        <div class="konbini__stage konbini__stage--day" @mousemove="onHosMove" @mouseleave="onHosLeave">
+          <span class="konbini__badge konbini__badge--day">
+            <i class="konbini__badge-dot konbini__badge-dot--day" />
+            {{ t.hospitalStatus }}
+          </span>
+
+          <div class="hos" :style="hosStyle">
+            <div class="hos__base" />
+            <div class="hos__box">
+              <div class="hos__f hos__f--front">
+                <div class="hos__cross">
+                  <i />
+                  <i />
+                </div>
+                <span v-for="n in 3" :key="n" class="hos__band" :style="{ top: `${52 + (n - 1) * 21}px` }" />
+                <span class="hos__door" />
+                <span class="hos__awning" />
+              </div>
+              <div class="hos__f hos__f--side">
+                <span v-for="n in 3" :key="n" class="hos__band hos__band--side" :style="{ top: `${52 + (n - 1) * 21}px` }" />
+              </div>
+              <div class="hos__f hos__f--top">
+                <span class="hos__roofbox" />
+              </div>
+            </div>
+            <span class="hos__tree hos__tree--l" />
+            <span class="hos__tree hos__tree--r" />
+          </div>
+
+          <span class="konbini__enter konbini__enter--day">
+            {{ t.hospitalEnter }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+              <path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </div>
+
+        <div class="konbini__info">
+          <div class="konbini__head">
+            <h3 class="konbini__title">
+              {{ t.hospitalTitle }}
+              <span class="konbini__title-en">{{ t.hospitalTitleEn }}</span>
+            </h3>
+            <span class="konbini__eta">3D</span>
+          </div>
+
+          <p class="konbini__desc">{{ t.hospitalDesc }}</p>
+
+          <div class="konbini__tags">
+            <span v-for="tag in t.hospitalTags" :key="tag" class="konbini__tag">{{ tag }}</span>
+          </div>
+        </div>
+      </article>
+      </div>
     </div>
   </section>
 </template>
@@ -710,4 +803,250 @@ onMounted(() => {
     background-size: 26px 26px;
   }
 }
+
+/* ================= 双卡片布局 ================= */
+.other__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px;
+  align-items: start;
+}
+
+.konbini {
+  max-width: none;
+  margin-inline: 0;
+}
+
+.other__grid > .konbini:nth-child(2) {
+  transition-delay: 0.28s, 0.28s, 0s, 0s;
+}
+
+@media (max-width: 900px) {
+  .other__grid {
+    grid-template-columns: 1fr;
+    max-width: 620px;
+    margin-inline: auto;
+  }
+}
+
+/* ================= 医院卡片：白天舞台 ================= */
+.konbini__stage--day {
+  background:
+    radial-gradient(ellipse 78% 62% at 50% 66%, rgba(150, 200, 232, 0.4), transparent 72%),
+    linear-gradient(180deg, #c9e3f6 0%, #e6f3fc 52%, #f2f9fe 100%);
+}
+
+.konbini__stage--day::before {
+  display: none;
+}
+
+.konbini__badge--day {
+  color: #2f7fc4;
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(47, 127, 196, 0.35);
+}
+
+/* 静态圆点，不做闪烁 */
+.konbini__badge-dot--day {
+  background: #2f7fc4;
+  animation: none;
+}
+
+.konbini__enter--day {
+  color: #2f7fc4;
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(47, 127, 196, 0.35);
+}
+
+.konbini:hover .konbini__enter--day {
+  background: rgba(47, 127, 196, 0.14);
+  border-color: #2f7fc4;
+}
+
+/* ================= 医院微缩预览 ================= */
+.hos {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--hrx)) rotateY(var(--hry));
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hos__base {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 360px;
+  height: 360px;
+  margin: -180px 0 0 -180px;
+  transform: rotateX(90deg) translateZ(-52px);
+  background-image:
+    linear-gradient(rgba(110, 150, 185, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(110, 150, 185, 0.16) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border-radius: 6px;
+  mask-image: radial-gradient(circle at 50% 50%, #000 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 30%, transparent 70%);
+}
+
+.hos__box {
+  position: relative;
+  width: 210px;
+  height: 150px;
+  transform-style: preserve-3d;
+  animation: hos-float 8s ease-in-out infinite;
+}
+
+@keyframes hos-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.hos__f {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  overflow: hidden;
+}
+
+.hos__f--front {
+  width: 210px;
+  height: 150px;
+  margin-left: -105px;
+  margin-top: -75px;
+  transform: translateZ(60px);
+  background: linear-gradient(180deg, #f7fafd 0%, #e6eef6 62%, #d5e0ea 100%);
+  border-radius: 3px 3px 0 0;
+  box-shadow: inset 0 0 30px rgba(150, 185, 215, 0.25);
+}
+
+.hos__f--side {
+  width: 120px;
+  height: 150px;
+  margin-left: -60px;
+  margin-top: -75px;
+  transform: rotateY(90deg) translateZ(105px);
+  background: linear-gradient(180deg, #dbe5ee 0%, #c3d0dc 65%, #b0bfcd 100%);
+}
+
+.hos__f--top {
+  width: 210px;
+  height: 120px;
+  margin-left: -105px;
+  margin-top: -60px;
+  transform: rotateX(90deg) translateZ(75px);
+  background: linear-gradient(135deg, #f2f6fa 0%, #dde6ef 55%, #c9d5e0 100%);
+  border-radius: 3px;
+}
+
+/* 蓝玻璃窗带 */
+.hos__band {
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  height: 12px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #b2d6f1 0%, #7fb3d9 55%, #6ba2cb 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.hos__band--side {
+  left: 7px;
+  right: 7px;
+  height: 10px;
+  background: linear-gradient(180deg, #9bc2de 0%, #6f9dbc 100%);
+}
+
+/* 入口门 */
+.hos__door {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 36px;
+  background: linear-gradient(180deg, #cbe8f8, #93bdd7);
+  box-shadow: 0 0 16px rgba(190, 225, 250, 0.9);
+}
+
+/* 雨棚 */
+.hos__awning {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 9px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #ffffff, #dce7f1);
+  box-shadow: 0 2px 6px rgba(80, 110, 140, 0.22);
+}
+
+/* 医疗十字 */
+.hos__cross {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 26px;
+}
+
+.hos__cross i {
+  position: absolute;
+  background: #2f7fc4;
+  border-radius: 2px;
+}
+
+.hos__cross i:first-child {
+  left: 9px;
+  top: 0;
+  width: 8px;
+  height: 26px;
+}
+
+.hos__cross i:last-child {
+  left: 0;
+  top: 9px;
+  width: 26px;
+  height: 8px;
+}
+
+/* 屋顶机房 */
+.hos__roofbox {
+  position: absolute;
+  left: 26px;
+  top: 30px;
+  width: 54px;
+  height: 40px;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #e7eef5, #cbd7e2);
+  box-shadow: 0 2px 6px rgba(90, 120, 150, 0.18);
+}
+
+/* 门前绿化 */
+.hos__tree {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-top: 54px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #a6da86, #5f9e4c);
+  box-shadow: 0 4px 10px rgba(60, 110, 60, 0.22);
+}
+
+.hos__tree--l {
+  margin-left: -136px;
+}
+
+.hos__tree--r {
+  margin-left: 108px;
+}
+
 </style>

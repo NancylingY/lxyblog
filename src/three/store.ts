@@ -425,7 +425,7 @@ function ceilingLights(parent: THREE.Object3D) {
   })
 
   // 靠门口的暖光补光：让近处货架与收银台更亮
-  const entryLight = new THREE.PointLight(0xffe0b0, 9, 5.6, 1.1)
+  const entryLight = new THREE.PointLight(0xffe0b0, 4, 5.6, 1.1)
   entryLight.position.set(0.35, SY + 2.0, 0.25)
   parent.add(entryLight)
   lights.push(entryLight)

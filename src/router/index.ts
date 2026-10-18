@@ -30,6 +30,13 @@ const router = createRouter({
       meta: { bare: true },
     },
     {
+      // 3D 微缩场景：白天现代综合医院
+      path: '/hospital',
+      name: 'hospital',
+      component: () => import('../views/HospitalView.vue'),
+      meta: { bare: true },
+    },
+    {
       // 项目已合并进首页，旧路径重定向到首页项目锚点
       path: '/projects',
       redirect: '/#projects',

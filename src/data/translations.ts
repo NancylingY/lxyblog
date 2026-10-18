@@ -72,6 +72,14 @@ export interface Translation {
   konbiniEnter: string
   back: string
 
+  /** Hospital 卡片 */
+  hospitalTitle: string
+  hospitalTitleEn: string
+  hospitalDesc: string
+  hospitalStatus: string
+  hospitalTags: string[]
+  hospitalEnter: string
+
   footerBuilt: string
 }
 
@@ -137,6 +145,14 @@ const zh: Translation = {
   konbiniEnter: '点击进入 3D 场景',
   back: '返回',
 
+  hospitalTitle: '现代综合医院',
+  hospitalTitleEn: 'General Hospital',
+  hospitalDesc:
+    '白天光下的现代化综合医院微缩场景。三渲二渲染，蓝玻璃幕墙映着天空，门前花园、水景与步道环绕四周。门诊大厅、候诊区、护士站、药房与自助设备全部建模，可透过落地玻璃看清室内。',
+  hospitalStatus: '可交互',
+  hospitalTags: ['Three.js', '日景渲染', '医疗建筑', '门前花园', '微缩场景'],
+  hospitalEnter: '点击进入 3D 场景',
+
   footerBuilt: 'Built with Vue 3 + Vite',
 }
 
@@ -201,6 +217,14 @@ const en: Translation = {
   konbiniHint: 'Placeholder preview · 3D model in progress',
   konbiniEnter: 'Enter the 3D scene',
   back: 'Back',
+
+  hospitalTitle: 'General Hospital',
+  hospitalTitleEn: '综合医院',
+  hospitalDesc:
+    'A modern general hospital diorama in daylight. Cel-shaded, with blue curtain-wall glass catching the sky and a landscaped forecourt of trees, benches and a reflecting pool. The outpatient lobby, waiting area, nurse station and pharmacy are all modeled and readable through the floor-to-ceiling glass.',
+  hospitalStatus: 'Interactive',
+  hospitalTags: ['Three.js', 'Daylight', 'Healthcare', 'Forecourt', 'Diorama'],
+  hospitalEnter: 'Enter the 3D scene',
 
   footerBuilt: 'Built with Vue 3 + Vite',
 }
