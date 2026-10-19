@@ -276,194 +276,60 @@ onMounted(() => {
           </span>
 
           <div class="terr" :style="terrStyle">
+            <!-- 盒底流光 -->
+            <div class="terr__floor" />
+
             <div class="terr__float">
-              <svg class="terr__art" viewBox="84 28 274 272" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <radialGradient id="terrHalo" cx="50%" cy="50%" r="50%">
-                    <stop offset="0" stop-color="#8fdcff" stop-opacity=".22" />
-                    <stop offset=".55" stop-color="#3f9fd0" stop-opacity=".08" />
-                    <stop offset="1" stop-color="#2b6f92" stop-opacity="0" />
-                  </radialGradient>
-                  <linearGradient id="terrGlass" x1="104" y1="92" x2="276" y2="286" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#dff5ff" stop-opacity=".22" />
-                    <stop offset=".45" stop-color="#a8dfff" stop-opacity=".07" />
-                    <stop offset="1" stop-color="#c7edff" stop-opacity=".17" />
-                  </linearGradient>
-                  <linearGradient id="terrGlassTop" x1="166" y1="46" x2="338" y2="92" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#eafaff" stop-opacity=".36" />
-                    <stop offset="1" stop-color="#8fd4ff" stop-opacity=".06" />
-                  </linearGradient>
-                  <linearGradient id="terrGrass" x1="126" y1="226" x2="266" y2="250" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#78b660" />
-                    <stop offset=".55" stop-color="#4f9150" />
-                    <stop offset="1" stop-color="#336c3d" />
-                  </linearGradient>
-                  <linearGradient id="terrRock" x1="140" y1="248" x2="250" y2="282" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#554936" />
-                    <stop offset=".5" stop-color="#3b3731" />
-                    <stop offset="1" stop-color="#21282b" />
-                  </linearGradient>
-                  <linearGradient id="terrMountain" x1="196" y1="110" x2="196" y2="238" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#a9becf" />
-                    <stop offset=".3" stop-color="#8399a9" />
-                    <stop offset=".65" stop-color="#566d7f" />
-                    <stop offset="1" stop-color="#384e5f" />
-                  </linearGradient>
-                  <linearGradient id="terrSnow" x1="196" y1="110" x2="196" y2="180" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#ffffff" />
-                    <stop offset=".55" stop-color="#e8f5ff" />
-                    <stop offset="1" stop-color="#b8d6ea" stop-opacity=".92" />
-                  </linearGradient>
-                  <linearGradient id="terrWater" x1="196" y1="172" x2="214" y2="258" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#f2feff" />
-                    <stop offset=".4" stop-color="#9fe7f4" />
-                    <stop offset="1" stop-color="#46b4cb" />
-                  </linearGradient>
-                  <filter id="terrBlur" x="-70%" y="-70%" width="240%" height="240%">
-                    <feGaussianBlur stdDeviation="6" />
-                  </filter>
-                  <filter id="terrSoft" x="-70%" y="-70%" width="240%" height="240%">
-                    <feGaussianBlur stdDeviation="1.6" />
-                  </filter>
-                  <g id="terrTree">
-                    <rect x="-1" y="-10" width="2.2" height="10" fill="#4b3524" />
-                    <path d="M0 -25 L8 -8 L-8 -8Z" fill="currentColor" />
-                    <path d="M0 -17 L10 -1 L-10 -1Z" fill="currentColor" opacity=".85" />
-                  </g>
-                  <g id="terrDeer">
-                    <path d="M-7 0 L-6 -14 L5 -14 L7 -2Z" fill="#b9855a" />
-                    <circle cx="7" cy="-16" r="3.2" fill="#b9855a" />
-                    <path d="M5 -18 L4 -25 M6.5 -18 L9.5 -25" stroke="#dccaa8" stroke-width=".9" stroke-linecap="round" />
-                    <path d="M-6 -2 L-6 2 M-2 -2 L-2 2 M3 -2 L3 2 M6 -2 L6 2" stroke="#6b4a30" stroke-width="1.2" stroke-linecap="round" />
-                  </g>
-                </defs>
+              <div class="terr__case">
+                <!-- 玻璃背面 -->
+                <div class="terr__pane terr__pane--back" />
 
-                <ellipse cx="196" cy="214" rx="152" ry="132" fill="url(#terrHalo)" />
+                <!-- 盆景：岩石岛 / 山 / 水 / 林 / 微光 -->
+                <div class="terr__diorama">
+                  <div class="terr__rock" />
+                  <div class="terr__island" />
 
-                <!-- 云隙间的光 -->
-                <g opacity=".55">
-                  <path d="M176 46 L196 46 L224 238 L164 238Z" fill="#dff6ff" opacity=".03" />
-                  <path d="M214 46 L226 46 L244 238 L206 238Z" fill="#dff6ff" opacity=".02" />
-                </g>
-                <ellipse cx="156" cy="126" rx="72" ry="58" fill="#ffd9a6" opacity=".045" filter="url(#terrBlur)" />
+                  <!-- 远山分层：越远越暗，制造空气透视 -->
+                  <span class="terr__peak terr__peak--far" />
+                  <span class="terr__peak terr__peak--mid" />
+                  <span class="terr__peak terr__peak--main">
+                    <i class="terr__peak-face" />
+                    <i class="terr__snow" />
+                    <i class="terr__falls" />
+                  </span>
+                  <span class="terr__peak terr__peak--shoulder" />
 
-                <!-- 玻璃立方体 -->
-                <polygon points="104,92 166,46 338,46 276,92" fill="url(#terrGlassTop)" />
-                <polygon points="276,92 338,46 338,240 276,286" fill="url(#terrGlass)" />
-                <polygon points="104,92 276,92 276,286 104,286" fill="url(#terrGlass)" />
-                <ellipse cx="248" cy="66" rx="48" ry="10" fill="#ffffff" opacity=".05" />
+                  <!-- 瀑布下的水潭 -->
+                  <div class="terr__pool" />
 
-                <!-- 浮岛 -->
-                <path d="M114 236 C124 260 152 280 196 282 C240 280 270 258 278 236Z" fill="url(#terrRock)" />
-                <path d="M114 236 C144 250 248 250 278 236 L278 244 C248 258 144 258 114 244Z" fill="#493826" opacity=".92" />
-                <ellipse cx="196" cy="236" rx="82" ry="17" fill="url(#terrGrass)" />
-                <ellipse cx="196" cy="236" rx="82" ry="17" fill="none" stroke="#2c5a35" stroke-opacity=".55" />
-                <ellipse cx="180" cy="230" rx="48" ry="9" fill="#a4d383" opacity=".18" />
+                  <!-- 针叶林 -->
+                  <span class="terr__tree" style="--x: -56px; --z: 22px; --s: 1.06" />
+                  <span class="terr__tree" style="--x: -36px; --z: 8px; --s: 0.84" />
+                  <span class="terr__tree" style="--x: 42px; --z: 24px; --s: 0.92" />
+                  <span class="terr__tree" style="--x: 60px; --z: -4px; --s: 0.76" />
 
-                <!-- 雪山 -->
-                <path d="M196 110 L212 156 L224 172 L236 236 L156 236 L168 180 L182 158Z" fill="url(#terrMountain)" />
-                <path d="M196 110 L188 160 L179 156 L168 180 L156 236 L196 236Z" fill="#374d60" opacity=".38" />
-                <path d="M224 172 L236 236 L208 236 L218 188Z" fill="#3d5264" opacity=".34" />
-                <path d="M196 110 L204 136 L213 148 L219 158 L208 154 L201 147 L196 142 L188 151 L179 147 L185 136Z" fill="url(#terrSnow)" />
-                <path d="M190 150 L186 178 M199 146 L201 172 M206 152 L208 170" stroke="#ecf7ff" stroke-opacity=".55" stroke-width="1.1" stroke-linecap="round" />
-                <path d="M196 110 L188 155 L179 151 L168 180 L160 222 L196 206Z" fill="#ffffff" opacity=".12" />
-                <path d="M168 180 L156 236 L188 236Z" fill="#71879a" />
-                <path d="M168 180 L173 193 L163 189Z" fill="#e7f4ff" opacity=".9" />
-                <path d="M224 172 L236 236 L208 236Z" fill="#8196a8" />
-                <path d="M224 172 L228 186 L218 182Z" fill="#e7f4ff" opacity=".8" />
-                <path d="M186 206 L180 230 M206 196 L212 228 M196 178 L194 214 M216 192 L220 220" stroke="#33495b" stroke-opacity=".5" stroke-width="1" stroke-linecap="round" />
-                <path d="M174 200 L170 224 M202 190 L204 214" stroke="#dcecf7" stroke-opacity=".28" stroke-width="1.2" stroke-linecap="round" />
+                  <!-- 微光尘埃 -->
+                  <span class="terr__mote" style="--x: -48px; --y: -32px; --z: 20px; --d: 0s" />
+                  <span class="terr__mote" style="--x: 26px; --y: -50px; --z: 8px; --d: -1.3s" />
+                  <span class="terr__mote" style="--x: 64px; --y: -16px; --z: -12px; --d: -2.5s" />
+                  <span class="terr__mote" style="--x: -14px; --y: -64px; --z: -28px; --d: -3.7s" />
+                  <span class="terr__mote" style="--x: -70px; --y: 2px; --z: -6px; --d: -4.9s" />
+                </div>
 
-                <!-- 瀑布与溪流 -->
-                <path d="M194 168 C196 194 195 216 196 238 L206 238 C205 216 206 194 204 168Z" fill="url(#terrWater)" opacity=".98" />
-                <path d="M199 172 C200 196 199 218 200 236" stroke="#ffffff" stroke-opacity=".75" stroke-width="1.6" stroke-linecap="round" />
-                <ellipse cx="199" cy="239" rx="14" ry="4" fill="#dffaff" opacity=".6" filter="url(#terrSoft)" />
-                <path d="M197 240 C208 247 190 253 205 258 C218 262 231 259 240 253" stroke="url(#terrWater)" stroke-width="9" stroke-linecap="round" fill="none" />
-                <path d="M197 240 C208 247 190 253 205 258 C218 262 231 259 240 253" stroke="#e7fdff" stroke-opacity=".6" stroke-width="1.8" stroke-linecap="round" fill="none" />
-                <ellipse cx="242" cy="253" rx="18" ry="6.5" fill="#4dc2d6" />
-                <ellipse cx="242" cy="253" rx="18" ry="6.5" fill="none" stroke="#c8f3ff" stroke-opacity=".45" />
-                <ellipse cx="237" cy="251" rx="7" ry="1.8" fill="#e8fdff" opacity=".55" />
+                <!-- 玻璃右面 / 顶面 / 正面 -->
+                <div class="terr__pane terr__pane--right" />
+                <div class="terr__pane terr__pane--top" />
+                <div class="terr__pane terr__pane--front">
+                  <i class="terr__shine" />
+                  <i class="terr__glint terr__glint--a" />
+                  <i class="terr__glint terr__glint--b" />
+                  <i class="terr__glint terr__glint--c" />
+                  <i class="terr__glint terr__glint--d" />
+                </div>
 
-                <!-- 树与草 -->
-                <use href="#terrTree" transform="translate(126 232) scale(.74)" color="#2b6742" />
-                <use href="#terrTree" transform="translate(140 238) scale(.9)" color="#356f47" />
-                <use href="#terrTree" transform="translate(154 231) scale(.66)" color="#2f6a55" />
-                <use href="#terrTree" transform="translate(162 240) scale(.8)" color="#3a7449" />
-                <use href="#terrTree" transform="translate(232 237) scale(.86)" color="#2f6c4a" />
-                <use href="#terrTree" transform="translate(248 232) scale(.98)" color="#356f50" />
-                <use href="#terrTree" transform="translate(262 240) scale(.72)" color="#2c6448" />
-                <use href="#terrTree" transform="translate(222 243) scale(.6)" color="#3a7851" />
-                <use href="#terrTree" transform="translate(118 242) scale(.62)" color="#3b7854" />
-                <use href="#terrTree" transform="translate(268 246) scale(.58)" color="#2f6a45" />
-                <use href="#terrTree" transform="translate(210 244) scale(.54)" color="#3a7550" />
-                <use href="#terrTree" transform="translate(146 245) scale(.56)" color="#2e6644" />
-                <path d="M120 247 C138 253 166 254 186 252 M214 254 C234 256 252 252 268 246" stroke="#7ab466" stroke-opacity=".55" stroke-width="1" stroke-linecap="round" />
-                <path d="M132 244 l2 -6 M136 246 l2 -5 M144 250 l2 -6 M252 246 l2 -6 M258 250 l2 -5" stroke="#6ca95d" stroke-width="1.2" stroke-linecap="round" />
-
-                <!-- 小鹿 -->
-                <use href="#terrDeer" transform="translate(172 249) scale(.76)" />
-                <use href="#terrDeer" transform="translate(184 254) scale(.54) rotate(-8)" />
-
-                <!-- 云与雾 -->
-                <g filter="url(#terrBlur)" opacity=".7">
-                  <ellipse cx="148" cy="124" rx="28" ry="12" fill="#fff3e2" opacity=".7" />
-                  <ellipse cx="166" cy="118" rx="20" ry="10" fill="#ffffff" opacity=".6" />
-                  <ellipse cx="132" cy="130" rx="16" ry="7" fill="#eef6ff" opacity=".5" />
-                </g>
-                <g filter="url(#terrBlur)" opacity=".62">
-                  <ellipse cx="246" cy="104" rx="28" ry="11" fill="#fff4e4" opacity=".62" />
-                  <ellipse cx="262" cy="110" rx="15" ry="7" fill="#ffffff" opacity=".45" />
-                </g>
-                <g filter="url(#terrBlur)" opacity=".4">
-                  <ellipse cx="128" cy="150" rx="20" ry="7" fill="#eef7ff" opacity=".4" />
-                </g>
-                <ellipse cx="196" cy="246" rx="84" ry="11" fill="#dff3ff" opacity=".12" filter="url(#terrBlur)" />
-                <ellipse cx="236" cy="258" rx="34" ry="7" fill="#d6f0ff" opacity=".14" filter="url(#terrBlur)" />
-
-                <!-- 玻璃里的星尘 -->
-                <g fill="#ffffff">
-                  <circle cx="120" cy="72" r="1.1" opacity=".65" />
-                  <circle cx="250" cy="62" r=".9" opacity=".5" />
-                  <circle cx="300" cy="118" r="1.2" opacity=".6" />
-                  <circle cx="146" cy="160" r=".7" opacity=".4" />
-                  <circle cx="268" cy="184" r=".8" opacity=".45" />
-                </g>
-
-                <!-- 玻璃反光 -->
-                <path d="M126 286 L158 92 L190 92 L158 286Z" fill="#eafaff" opacity=".035" />
-                <path d="M212 92 L230 92 L198 286 L180 286Z" fill="#eafaff" opacity=".025" />
-                <path d="M276 92 L338 46 L338 90 L276 138Z" fill="#ffffff" opacity=".045" />
-
-                <!-- 立方体棱边 -->
-                <g fill="none" stroke-linejoin="round">
-                  <g stroke="#9fdcff" stroke-opacity=".16" stroke-width="4">
-                    <path d="M104 92H276V286H104Z" />
-                    <path d="M104 92 166 46H338L276 92" />
-                    <path d="M338 46V240L276 286" />
-                  </g>
-                  <g stroke="#d6f1ff" stroke-opacity=".62" stroke-width="1">
-                    <path d="M104 92H276V286H104Z" />
-                    <path d="M104 92 166 46H338L276 92" />
-                    <path d="M338 46V240L276 286" />
-                  </g>
-                </g>
-
-                <!-- 转角微光 -->
-                <g fill="#ffffff">
-                  <circle cx="104" cy="92" r="1.7" opacity=".9" />
-                  <circle cx="276" cy="92" r="1.5" opacity=".8" />
-                  <circle cx="166" cy="46" r="1.8" opacity=".85" />
-                  <circle cx="338" cy="46" r="1.4" opacity=".7" />
-                  <circle cx="276" cy="286" r="1.3" opacity=".7" />
-                  <circle cx="104" cy="286" r="1.2" opacity=".6" />
-                  <circle cx="338" cy="240" r="1.2" opacity=".6" />
-                </g>
-                <g fill="#bfeaff" opacity=".18">
-                  <circle cx="104" cy="92" r="5" />
-                  <circle cx="338" cy="46" r="5" />
-                  <circle cx="276" cy="286" r="4" />
-                </g>
-              </svg>
+                <!-- 石台底面 -->
+                <div class="terr__pane terr__pane--base" />
+              </div>
             </div>
           </div>
 
@@ -1423,6 +1289,7 @@ onMounted(() => {
   border-color: rgba(143, 216, 255, 0.3);
 }
 
+/* ================= 微光之境：CSS 3D 生态箱 ================= */
 .terr {
   position: relative;
   width: 100%;
@@ -1435,29 +1302,30 @@ onMounted(() => {
   transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* 盒底流光（不随箱体浮动） */
+.terr__floor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 320px;
+  height: 320px;
+  margin: -160px 0 0 -160px;
+  transform: rotateX(90deg) translateZ(-96px);
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(126, 214, 255, 0.2) 0%,
+    rgba(74, 158, 208, 0.08) 38%,
+    rgba(40, 90, 130, 0) 64%
+  );
+  transition: opacity 0.5s ease;
+}
+
 .terr__float {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+  width: 190px;
+  height: 150px;
+  transform-style: preserve-3d;
   animation: terr-float 9s ease-in-out infinite;
-}
-
-.terr__art {
-  width: min(94%, 300px);
-  height: auto;
-  margin-bottom: 14px;
-  filter:
-    drop-shadow(0 18px 26px rgba(0, 0, 0, 0.48))
-    drop-shadow(0 0 20px rgba(110, 205, 255, 0.13));
-  transition: filter 0.4s ease;
-}
-
-.konbini:hover .terr__art {
-  filter:
-    drop-shadow(0 20px 28px rgba(0, 0, 0, 0.5))
-    drop-shadow(0 0 28px rgba(130, 218, 255, 0.22));
 }
 
 @keyframes terr-float {
@@ -1465,23 +1333,330 @@ onMounted(() => {
   50% { transform: translateY(-7px); }
 }
 
-@media (min-width: 1181px) {
-  .terr__art {
-    width: min(96%, 296px);
+.terr__case {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: scale(1.06);
+}
+
+/* —— 玻璃面 —— */
+.terr__pane {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 1px solid rgba(191, 232, 255, 0.3);
+  background: linear-gradient(
+    152deg,
+    rgba(214, 241, 255, 0.1) 0%,
+    rgba(126, 196, 232, 0.028) 46%,
+    rgba(178, 228, 255, 0.08) 100%
+  );
+  transition: border-color 0.4s ease;
+}
+
+.terr__pane--back {
+  width: 190px;
+  height: 150px;
+  margin: -75px 0 0 -95px;
+  transform: translateZ(-85px);
+}
+
+.terr__pane--front {
+  width: 190px;
+  height: 150px;
+  margin: -75px 0 0 -95px;
+  transform: translateZ(85px);
+  border-color: rgba(207, 238, 255, 0.4);
+  background: linear-gradient(
+    152deg,
+    rgba(220, 244, 255, 0.06) 0%,
+    rgba(140, 205, 240, 0.016) 50%,
+    rgba(190, 232, 255, 0.05) 100%
+  );
+}
+
+.terr__pane--right {
+  width: 170px;
+  height: 150px;
+  margin: -75px 0 0 -85px;
+  transform: rotateY(90deg) translateZ(95px);
+}
+
+.terr__pane--top {
+  width: 190px;
+  height: 170px;
+  margin: -85px 0 0 -95px;
+  transform: rotateX(90deg) translateZ(75px);
+  border-color: rgba(214, 242, 255, 0.38);
+  background: linear-gradient(
+    136deg,
+    rgba(226, 246, 255, 0.15) 0%,
+    rgba(148, 212, 245, 0.045) 54%,
+    rgba(200, 238, 255, 0.1) 100%
+  );
+}
+
+.terr__pane--base {
+  width: 190px;
+  height: 170px;
+  margin: -85px 0 0 -95px;
+  transform: rotateX(-90deg) translateZ(75px);
+  border-color: rgba(120, 170, 200, 0.2);
+  background: linear-gradient(180deg, #2b333b 0%, #171c22 100%);
+}
+
+/* 正面斜向高光 */
+.terr__shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    112deg,
+    transparent 24%,
+    rgba(255, 255, 255, 0.14) 31%,
+    rgba(255, 255, 255, 0.03) 39%,
+    transparent 46%
+  );
+}
+
+/* 四角镜面微光 */
+.terr__glint {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #f2fdff;
+  box-shadow: 0 0 7px 2px rgba(190, 238, 255, 0.7);
+}
+
+.terr__glint--a { left: -1px; top: -1px; }
+.terr__glint--b { right: -1px; top: -1px; }
+.terr__glint--c { left: -1px; bottom: -1px; }
+.terr__glint--d { right: -1px; bottom: -1px; }
+
+/* —— 盆景 —— */
+.terr__diorama {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* 岩石底座 */
+.terr__rock {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 168px;
+  height: 148px;
+  margin: -74px 0 0 -84px;
+  border-radius: 50%;
+  transform: translate3d(0, 66px, 0) rotateX(90deg);
+  background: radial-gradient(
+    ellipse at 50% 44%,
+    #4b4339 0%,
+    #38342d 52%,
+    #22262b 100%
+  );
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.55);
+}
+
+/* 草地岛面 */
+.terr__island {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 156px;
+  height: 138px;
+  margin: -69px 0 0 -78px;
+  border-radius: 50%;
+  transform: translate3d(0, 58px, 0) rotateX(90deg);
+  background: radial-gradient(
+    ellipse at 46% 38%,
+    #7cba67 0%,
+    #578f4e 40%,
+    #38663c 72%,
+    #25492d 100%
+  );
+  box-shadow:
+    inset 0 0 26px rgba(16, 38, 24, 0.55),
+    0 0 0 1px rgba(154, 214, 154, 0.16);
+}
+
+/* —— 山体分层 —— */
+.terr__peak {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.terr__peak--far {
+  width: 124px;
+  height: 50px;
+  margin: -50px 0 0 -62px;
+  transform: translate3d(-14px, 58px, -52px);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, #2b3c4c 0%, #22303c 60%, #18222b 100%);
+}
+
+.terr__peak--mid {
+  width: 96px;
+  height: 62px;
+  margin: -62px 0 0 -48px;
+  transform: translate3d(-34px, 58px, -38px);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, #40596b 0%, #2d4152 58%, #1e2b35 100%);
+}
+
+/* 右侧肩峰：与主峰构成双峰山脊 */
+.terr__peak--shoulder {
+  width: 70px;
+  height: 58px;
+  margin: -58px 0 0 -35px;
+  transform: translate3d(40px, 58px, -6px);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, #5d7689 0%, #3b5062 52%, #22303b 100%);
+}
+
+.terr__peak--main {
+  width: 100px;
+  height: 96px;
+  margin: -96px 0 0 -50px;
+  transform: translate3d(-10px, 58px, -22px);
+}
+
+.terr__peak-face {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(100deg, transparent 58%, rgba(255, 214, 160, 0.26) 94%),
+    linear-gradient(
+      180deg,
+      #889eb0 0%,
+      #5c7484 22%,
+      #3a4c5c 54%,
+      #1c2831 100%
+    );
+  box-shadow: inset -12px -6px 22px rgba(8, 16, 24, 0.4);
+}
+
+/* 雪冠 */
+.terr__snow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 34px;
+  height: 21px;
+  margin-left: -17px;
+  clip-path: polygon(50% 0, 100% 100%, 74% 76%, 54% 94%, 26% 70%, 0 100%);
+  background: linear-gradient(180deg, #f4fbff 0%, #d7ecfb 58%, rgba(168, 208, 232, 0.3) 100%);
+}
+
+/* 瀑布 */
+.terr__falls {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 7px;
+  height: 74px;
+  margin-left: -3.5px;
+  border-radius: 4px;
+  background: linear-gradient(
+    180deg,
+    rgba(226, 249, 255, 0.85) 0%,
+    rgba(150, 226, 242, 0.68) 45%,
+    rgba(80, 184, 218, 0.44) 100%
+  );
+  background-size: 100% 200%;
+  clip-path: polygon(28% 0, 72% 0, 100% 100%, 0 100%);
+  animation: terr-falls 2.8s linear infinite;
+}
+
+@keyframes terr-falls {
+  0% { background-position: 0 -74px; }
+  100% { background-position: 0 74px; }
+}
+
+/* 水潭 */
+.terr__pool {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 92px;
+  height: 46px;
+  margin: -23px 0 0 -46px;
+  border-radius: 50%;
+  transform: translate3d(2px, 55.5px, 10px) rotateX(90deg);
+  background: radial-gradient(
+    ellipse at 50% 46%,
+    rgba(232, 253, 255, 0.95) 0%,
+    rgba(132, 226, 244, 0.8) 32%,
+    rgba(62, 162, 200, 0.6) 68%,
+    rgba(38, 110, 146, 0.3) 100%
+  );
+  box-shadow:
+    0 0 22px 6px rgba(110, 214, 242, 0.3),
+    0 0 0 1px rgba(170, 240, 255, 0.25);
+  animation: terr-pool 5.5s ease-in-out infinite;
+}
+
+@keyframes terr-pool {
+  0%, 100% { box-shadow: 0 0 18px 4px rgba(110, 214, 242, 0.22); }
+  50% { box-shadow: 0 0 26px 8px rgba(126, 226, 250, 0.36); }
+}
+
+/* 针叶树 */
+.terr__tree {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(19px * var(--s, 1));
+  height: calc(29px * var(--s, 1));
+  margin-left: calc(-9.5px * var(--s, 1));
+  margin-top: calc(-29px * var(--s, 1));
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, #8ccc74 0%, #478250 50%, #20402b 100%);
+  transform: translate3d(var(--x, 0), 58px, var(--z, 0));
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45));
+}
+
+/* 微光尘埃 */
+.terr__mote {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: #e8faff;
+  box-shadow:
+    0 0 6px 2px rgba(159, 226, 255, 0.75),
+    0 0 14px 5px rgba(110, 200, 250, 0.28);
+  transform: translate3d(var(--x, 0), var(--y, 0), var(--z, 0));
+  animation: terr-mote 6.5s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes terr-mote {
+  0%, 100% {
+    opacity: 0.2;
+    transform: translate3d(var(--x, 0), var(--y, 0), var(--z, 0)) scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(var(--x, 0), calc(var(--y, 0px) - 9px), var(--z, 0)) scale(1.1);
   }
 }
 
-@media (min-width: 901px) and (max-width: 1180px) {
-  .terr__art {
-    width: min(82%, 342px);
-  }
+/* 悬停：玻璃与地面流光同时提亮 */
+.konbini:hover .terr__pane {
+  border-color: rgba(214, 244, 255, 0.52);
 }
 
-@media (max-width: 720px) {
-  .terr__art {
-    width: min(82%, 248px);
-    margin-bottom: 8px;
-  }
+.konbini:hover .terr__floor {
+  filter: brightness(1.35);
 }
+
 
 </style>
