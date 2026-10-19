@@ -80,6 +80,16 @@ export interface Translation {
   hospitalTags: string[]
   hospitalEnter: string
 
+  /** Terrarium 卡片 */
+  terrariumTitle: string
+  terrariumTitleEn: string
+  terrariumDesc: string
+  terrariumStatus: string
+  terrariumTags: string[]
+  terrariumEnter: string
+  terrariumDay: string
+  terrariumNight: string
+
   footerBuilt: string
 }
 
@@ -153,6 +163,16 @@ const zh: Translation = {
   hospitalTags: ['Three.js', '日景渲染', '医疗建筑', '门前花园', '微缩场景'],
   hospitalEnter: '点击进入 3D 场景',
 
+  terrariumTitle: '微光之境',
+  terrariumTitleEn: 'Luminous Terrarium',
+  terrariumDesc:
+    '悬浮在深空中的透明玻璃立方体，里面是一方自成一体的微缩生态。雪山融水汇成蜿蜒溪流与瀑布，落进林间小湖；鹿群在草甸停驻，云影与薄雾缓缓流过。拖拽旋转、滚轮缩放，点击玻璃里的世界即可切换昼夜。',
+  terrariumStatus: '可交互',
+  terrariumTags: ['Three.js', '玻璃微缩', '昼夜过渡', '柔和光影', '生态场景'],
+  terrariumEnter: '点击进入 3D 场景',
+  terrariumDay: '白昼',
+  terrariumNight: '夜晚',
+
   footerBuilt: 'Built with Vue 3 + Vite',
 }
 
@@ -225,6 +245,16 @@ const en: Translation = {
   hospitalStatus: 'Interactive',
   hospitalTags: ['Three.js', 'Daylight', 'Healthcare', 'Forecourt', 'Diorama'],
   hospitalEnter: 'Enter the 3D scene',
+
+  terrariumTitle: 'Luminous Terrarium',
+  terrariumTitleEn: '微光之境',
+  terrariumDesc:
+    'A transparent glass cube adrift in deep space, holding a self-contained miniature ecosystem. Snowmelt threads into a winding stream and a waterfall, spilling into a forest lake; deer rest on the meadow while clouds and mist drift through. Drag to orbit, scroll to zoom, click the world inside to shift from day to night.',
+  terrariumStatus: 'Interactive',
+  terrariumTags: ['Three.js', 'Glass Diorama', 'Day–Night', 'Soft Light', 'Ecosystem'],
+  terrariumEnter: 'Enter the 3D scene',
+  terrariumDay: 'Day',
+  terrariumNight: 'Night',
 
   footerBuilt: 'Built with Vue 3 + Vite',
 }

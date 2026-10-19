@@ -37,6 +37,13 @@ const router = createRouter({
       meta: { bare: true },
     },
     {
+      // 3D 微缩场景：玻璃立方体中的微光生态
+      path: '/terrarium',
+      name: 'terrarium',
+      component: () => import('../views/TerrariumView.vue'),
+      meta: { bare: true },
+    },
+    {
       // 项目已合并进首页，旧路径重定向到首页项目锚点
       path: '/projects',
       redirect: '/#projects',

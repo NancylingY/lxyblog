@@ -63,6 +63,33 @@ function enterHospital() {
   router.push('/hospital')
 }
 
+/* 微光之境卡片：独立的视差状态 */
+const terRx = ref(-10)
+const terRy = ref(-28)
+
+const terrStyle = computed(() => ({
+  '--trx': `${terRx.value}deg`,
+  '--try': `${terRy.value}deg`,
+}))
+
+function onTerMove(e: MouseEvent) {
+  const el = e.currentTarget as HTMLElement
+  const r = el.getBoundingClientRect()
+  const px = (e.clientX - r.left) / r.width - 0.5
+  const py = (e.clientY - r.top) / r.height - 0.5
+  terRx.value = -10 - py * 12
+  terRy.value = -28 + px * 22
+}
+
+function onTerLeave() {
+  terRx.value = -10
+  terRy.value = -28
+}
+
+function enterTerrarium() {
+  router.push('/terrarium')
+}
+
 onMounted(() => {
   requestAnimationFrame(() => (mounted.value = true))
 })
@@ -224,6 +251,243 @@ onMounted(() => {
 
           <div class="konbini__tags">
             <span v-for="tag in t.hospitalTags" :key="tag" class="konbini__tag">{{ tag }}</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 微光之境 · 3D 生态卡片 -->
+      <article
+        class="card konbini konbini--terr"
+        role="link"
+        tabindex="0"
+        :aria-label="t.terrariumEnter"
+        @click="enterTerrarium"
+        @keydown.enter="enterTerrarium"
+        @keydown.space.prevent="enterTerrarium"
+      >
+        <div
+          class="konbini__stage konbini__stage--terr"
+          @mousemove="onTerMove"
+          @mouseleave="onTerLeave"
+        >
+          <span class="konbini__badge konbini__badge--terr">
+            <i class="konbini__badge-dot konbini__badge-dot--terr" />
+            {{ t.terrariumStatus }}
+          </span>
+
+          <div class="terr" :style="terrStyle">
+            <div class="terr__float">
+              <svg class="terr__art" viewBox="84 28 274 272" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <radialGradient id="terrHalo" cx="50%" cy="50%" r="50%">
+                    <stop offset="0" stop-color="#8fdcff" stop-opacity=".22" />
+                    <stop offset=".55" stop-color="#3f9fd0" stop-opacity=".08" />
+                    <stop offset="1" stop-color="#2b6f92" stop-opacity="0" />
+                  </radialGradient>
+                  <linearGradient id="terrGlass" x1="104" y1="92" x2="276" y2="286" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#dff5ff" stop-opacity=".22" />
+                    <stop offset=".45" stop-color="#a8dfff" stop-opacity=".07" />
+                    <stop offset="1" stop-color="#c7edff" stop-opacity=".17" />
+                  </linearGradient>
+                  <linearGradient id="terrGlassTop" x1="166" y1="46" x2="338" y2="92" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#eafaff" stop-opacity=".36" />
+                    <stop offset="1" stop-color="#8fd4ff" stop-opacity=".06" />
+                  </linearGradient>
+                  <linearGradient id="terrGrass" x1="126" y1="226" x2="266" y2="250" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#78b660" />
+                    <stop offset=".55" stop-color="#4f9150" />
+                    <stop offset="1" stop-color="#336c3d" />
+                  </linearGradient>
+                  <linearGradient id="terrRock" x1="140" y1="248" x2="250" y2="282" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#554936" />
+                    <stop offset=".5" stop-color="#3b3731" />
+                    <stop offset="1" stop-color="#21282b" />
+                  </linearGradient>
+                  <linearGradient id="terrMountain" x1="196" y1="110" x2="196" y2="238" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#a9becf" />
+                    <stop offset=".3" stop-color="#8399a9" />
+                    <stop offset=".65" stop-color="#566d7f" />
+                    <stop offset="1" stop-color="#384e5f" />
+                  </linearGradient>
+                  <linearGradient id="terrSnow" x1="196" y1="110" x2="196" y2="180" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#ffffff" />
+                    <stop offset=".55" stop-color="#e8f5ff" />
+                    <stop offset="1" stop-color="#b8d6ea" stop-opacity=".92" />
+                  </linearGradient>
+                  <linearGradient id="terrWater" x1="196" y1="172" x2="214" y2="258" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#f2feff" />
+                    <stop offset=".4" stop-color="#9fe7f4" />
+                    <stop offset="1" stop-color="#46b4cb" />
+                  </linearGradient>
+                  <filter id="terrBlur" x="-70%" y="-70%" width="240%" height="240%">
+                    <feGaussianBlur stdDeviation="6" />
+                  </filter>
+                  <filter id="terrSoft" x="-70%" y="-70%" width="240%" height="240%">
+                    <feGaussianBlur stdDeviation="1.6" />
+                  </filter>
+                  <g id="terrTree">
+                    <rect x="-1" y="-10" width="2.2" height="10" fill="#4b3524" />
+                    <path d="M0 -25 L8 -8 L-8 -8Z" fill="currentColor" />
+                    <path d="M0 -17 L10 -1 L-10 -1Z" fill="currentColor" opacity=".85" />
+                  </g>
+                  <g id="terrDeer">
+                    <path d="M-7 0 L-6 -14 L5 -14 L7 -2Z" fill="#b9855a" />
+                    <circle cx="7" cy="-16" r="3.2" fill="#b9855a" />
+                    <path d="M5 -18 L4 -25 M6.5 -18 L9.5 -25" stroke="#dccaa8" stroke-width=".9" stroke-linecap="round" />
+                    <path d="M-6 -2 L-6 2 M-2 -2 L-2 2 M3 -2 L3 2 M6 -2 L6 2" stroke="#6b4a30" stroke-width="1.2" stroke-linecap="round" />
+                  </g>
+                </defs>
+
+                <ellipse cx="196" cy="214" rx="152" ry="132" fill="url(#terrHalo)" />
+
+                <!-- 云隙间的光 -->
+                <g opacity=".55">
+                  <path d="M176 46 L196 46 L224 238 L164 238Z" fill="#dff6ff" opacity=".03" />
+                  <path d="M214 46 L226 46 L244 238 L206 238Z" fill="#dff6ff" opacity=".02" />
+                </g>
+                <ellipse cx="156" cy="126" rx="72" ry="58" fill="#ffd9a6" opacity=".045" filter="url(#terrBlur)" />
+
+                <!-- 玻璃立方体 -->
+                <polygon points="104,92 166,46 338,46 276,92" fill="url(#terrGlassTop)" />
+                <polygon points="276,92 338,46 338,240 276,286" fill="url(#terrGlass)" />
+                <polygon points="104,92 276,92 276,286 104,286" fill="url(#terrGlass)" />
+                <ellipse cx="248" cy="66" rx="48" ry="10" fill="#ffffff" opacity=".05" />
+
+                <!-- 浮岛 -->
+                <path d="M114 236 C124 260 152 280 196 282 C240 280 270 258 278 236Z" fill="url(#terrRock)" />
+                <path d="M114 236 C144 250 248 250 278 236 L278 244 C248 258 144 258 114 244Z" fill="#493826" opacity=".92" />
+                <ellipse cx="196" cy="236" rx="82" ry="17" fill="url(#terrGrass)" />
+                <ellipse cx="196" cy="236" rx="82" ry="17" fill="none" stroke="#2c5a35" stroke-opacity=".55" />
+                <ellipse cx="180" cy="230" rx="48" ry="9" fill="#a4d383" opacity=".18" />
+
+                <!-- 雪山 -->
+                <path d="M196 110 L212 156 L224 172 L236 236 L156 236 L168 180 L182 158Z" fill="url(#terrMountain)" />
+                <path d="M196 110 L188 160 L179 156 L168 180 L156 236 L196 236Z" fill="#374d60" opacity=".38" />
+                <path d="M224 172 L236 236 L208 236 L218 188Z" fill="#3d5264" opacity=".34" />
+                <path d="M196 110 L204 136 L213 148 L219 158 L208 154 L201 147 L196 142 L188 151 L179 147 L185 136Z" fill="url(#terrSnow)" />
+                <path d="M190 150 L186 178 M199 146 L201 172 M206 152 L208 170" stroke="#ecf7ff" stroke-opacity=".55" stroke-width="1.1" stroke-linecap="round" />
+                <path d="M196 110 L188 155 L179 151 L168 180 L160 222 L196 206Z" fill="#ffffff" opacity=".12" />
+                <path d="M168 180 L156 236 L188 236Z" fill="#71879a" />
+                <path d="M168 180 L173 193 L163 189Z" fill="#e7f4ff" opacity=".9" />
+                <path d="M224 172 L236 236 L208 236Z" fill="#8196a8" />
+                <path d="M224 172 L228 186 L218 182Z" fill="#e7f4ff" opacity=".8" />
+                <path d="M186 206 L180 230 M206 196 L212 228 M196 178 L194 214 M216 192 L220 220" stroke="#33495b" stroke-opacity=".5" stroke-width="1" stroke-linecap="round" />
+                <path d="M174 200 L170 224 M202 190 L204 214" stroke="#dcecf7" stroke-opacity=".28" stroke-width="1.2" stroke-linecap="round" />
+
+                <!-- 瀑布与溪流 -->
+                <path d="M194 168 C196 194 195 216 196 238 L206 238 C205 216 206 194 204 168Z" fill="url(#terrWater)" opacity=".98" />
+                <path d="M199 172 C200 196 199 218 200 236" stroke="#ffffff" stroke-opacity=".75" stroke-width="1.6" stroke-linecap="round" />
+                <ellipse cx="199" cy="239" rx="14" ry="4" fill="#dffaff" opacity=".6" filter="url(#terrSoft)" />
+                <path d="M197 240 C208 247 190 253 205 258 C218 262 231 259 240 253" stroke="url(#terrWater)" stroke-width="9" stroke-linecap="round" fill="none" />
+                <path d="M197 240 C208 247 190 253 205 258 C218 262 231 259 240 253" stroke="#e7fdff" stroke-opacity=".6" stroke-width="1.8" stroke-linecap="round" fill="none" />
+                <ellipse cx="242" cy="253" rx="18" ry="6.5" fill="#4dc2d6" />
+                <ellipse cx="242" cy="253" rx="18" ry="6.5" fill="none" stroke="#c8f3ff" stroke-opacity=".45" />
+                <ellipse cx="237" cy="251" rx="7" ry="1.8" fill="#e8fdff" opacity=".55" />
+
+                <!-- 树与草 -->
+                <use href="#terrTree" transform="translate(126 232) scale(.74)" color="#2b6742" />
+                <use href="#terrTree" transform="translate(140 238) scale(.9)" color="#356f47" />
+                <use href="#terrTree" transform="translate(154 231) scale(.66)" color="#2f6a55" />
+                <use href="#terrTree" transform="translate(162 240) scale(.8)" color="#3a7449" />
+                <use href="#terrTree" transform="translate(232 237) scale(.86)" color="#2f6c4a" />
+                <use href="#terrTree" transform="translate(248 232) scale(.98)" color="#356f50" />
+                <use href="#terrTree" transform="translate(262 240) scale(.72)" color="#2c6448" />
+                <use href="#terrTree" transform="translate(222 243) scale(.6)" color="#3a7851" />
+                <use href="#terrTree" transform="translate(118 242) scale(.62)" color="#3b7854" />
+                <use href="#terrTree" transform="translate(268 246) scale(.58)" color="#2f6a45" />
+                <use href="#terrTree" transform="translate(210 244) scale(.54)" color="#3a7550" />
+                <use href="#terrTree" transform="translate(146 245) scale(.56)" color="#2e6644" />
+                <path d="M120 247 C138 253 166 254 186 252 M214 254 C234 256 252 252 268 246" stroke="#7ab466" stroke-opacity=".55" stroke-width="1" stroke-linecap="round" />
+                <path d="M132 244 l2 -6 M136 246 l2 -5 M144 250 l2 -6 M252 246 l2 -6 M258 250 l2 -5" stroke="#6ca95d" stroke-width="1.2" stroke-linecap="round" />
+
+                <!-- 小鹿 -->
+                <use href="#terrDeer" transform="translate(172 249) scale(.76)" />
+                <use href="#terrDeer" transform="translate(184 254) scale(.54) rotate(-8)" />
+
+                <!-- 云与雾 -->
+                <g filter="url(#terrBlur)" opacity=".7">
+                  <ellipse cx="148" cy="124" rx="28" ry="12" fill="#fff3e2" opacity=".7" />
+                  <ellipse cx="166" cy="118" rx="20" ry="10" fill="#ffffff" opacity=".6" />
+                  <ellipse cx="132" cy="130" rx="16" ry="7" fill="#eef6ff" opacity=".5" />
+                </g>
+                <g filter="url(#terrBlur)" opacity=".62">
+                  <ellipse cx="246" cy="104" rx="28" ry="11" fill="#fff4e4" opacity=".62" />
+                  <ellipse cx="262" cy="110" rx="15" ry="7" fill="#ffffff" opacity=".45" />
+                </g>
+                <g filter="url(#terrBlur)" opacity=".4">
+                  <ellipse cx="128" cy="150" rx="20" ry="7" fill="#eef7ff" opacity=".4" />
+                </g>
+                <ellipse cx="196" cy="246" rx="84" ry="11" fill="#dff3ff" opacity=".12" filter="url(#terrBlur)" />
+                <ellipse cx="236" cy="258" rx="34" ry="7" fill="#d6f0ff" opacity=".14" filter="url(#terrBlur)" />
+
+                <!-- 玻璃里的星尘 -->
+                <g fill="#ffffff">
+                  <circle cx="120" cy="72" r="1.1" opacity=".65" />
+                  <circle cx="250" cy="62" r=".9" opacity=".5" />
+                  <circle cx="300" cy="118" r="1.2" opacity=".6" />
+                  <circle cx="146" cy="160" r=".7" opacity=".4" />
+                  <circle cx="268" cy="184" r=".8" opacity=".45" />
+                </g>
+
+                <!-- 玻璃反光 -->
+                <path d="M126 286 L158 92 L190 92 L158 286Z" fill="#eafaff" opacity=".035" />
+                <path d="M212 92 L230 92 L198 286 L180 286Z" fill="#eafaff" opacity=".025" />
+                <path d="M276 92 L338 46 L338 90 L276 138Z" fill="#ffffff" opacity=".045" />
+
+                <!-- 立方体棱边 -->
+                <g fill="none" stroke-linejoin="round">
+                  <g stroke="#9fdcff" stroke-opacity=".16" stroke-width="4">
+                    <path d="M104 92H276V286H104Z" />
+                    <path d="M104 92 166 46H338L276 92" />
+                    <path d="M338 46V240L276 286" />
+                  </g>
+                  <g stroke="#d6f1ff" stroke-opacity=".62" stroke-width="1">
+                    <path d="M104 92H276V286H104Z" />
+                    <path d="M104 92 166 46H338L276 92" />
+                    <path d="M338 46V240L276 286" />
+                  </g>
+                </g>
+
+                <!-- 转角微光 -->
+                <g fill="#ffffff">
+                  <circle cx="104" cy="92" r="1.7" opacity=".9" />
+                  <circle cx="276" cy="92" r="1.5" opacity=".8" />
+                  <circle cx="166" cy="46" r="1.8" opacity=".85" />
+                  <circle cx="338" cy="46" r="1.4" opacity=".7" />
+                  <circle cx="276" cy="286" r="1.3" opacity=".7" />
+                  <circle cx="104" cy="286" r="1.2" opacity=".6" />
+                  <circle cx="338" cy="240" r="1.2" opacity=".6" />
+                </g>
+                <g fill="#bfeaff" opacity=".18">
+                  <circle cx="104" cy="92" r="5" />
+                  <circle cx="338" cy="46" r="5" />
+                  <circle cx="276" cy="286" r="4" />
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <span class="konbini__enter konbini__enter--terr">
+            {{ t.terrariumEnter }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+              <path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </div>
+
+        <div class="konbini__info">
+          <div class="konbini__head">
+            <h3 class="konbini__title">
+              {{ t.terrariumTitle }}
+              <span class="konbini__title-en">{{ t.terrariumTitleEn }}</span>
+            </h3>
+            <span class="konbini__eta konbini__eta--terr">3D</span>
+          </div>
+
+          <p class="konbini__desc">{{ t.terrariumDesc }}</p>
+
+          <div class="konbini__tags">
+            <span v-for="tag in t.terrariumTags" :key="tag" class="konbini__tag">{{ tag }}</span>
           </div>
         </div>
       </article>
@@ -804,21 +1068,71 @@ onMounted(() => {
   }
 }
 
-/* ================= 双卡片布局 ================= */
+/* ================= 三卡片布局 ================= */
 .other__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 26px;
-  align-items: start;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  align-items: stretch;
 }
 
 .konbini {
   max-width: none;
   margin-inline: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.other__grid > .konbini .konbini__info {
+  flex: 1;
 }
 
 .other__grid > .konbini:nth-child(2) {
   transition-delay: 0.28s, 0.28s, 0s, 0s;
+}
+
+.other__grid > .konbini:nth-child(3) {
+  transition-delay: 0.44s, 0.44s, 0s, 0s;
+}
+
+@media (min-width: 1181px) {
+  .other__grid .konbini__stage {
+    height: 360px;
+  }
+
+  .other__grid .konbini__info {
+    padding: 24px 24px 26px;
+  }
+
+  .other__grid .konbini__title {
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .other__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .other__grid > .konbini--terr {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+
+  .other__grid > .konbini--terr .konbini__stage {
+    height: 100%;
+    min-height: 380px;
+    border-bottom: 0;
+    border-right: 1px solid var(--line);
+  }
+
+  .other__grid > .konbini--terr .konbini__info {
+    align-self: center;
+    padding: 34px 34px 36px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -828,6 +1142,7 @@ onMounted(() => {
     margin-inline: auto;
   }
 }
+
 
 /* ================= 医院卡片：白天舞台 ================= */
 .konbini__stage--day {
@@ -1047,6 +1362,126 @@ onMounted(() => {
 
 .hos__tree--r {
   margin-left: 108px;
+}
+
+/* ================= 微光之境：深空舞台 ================= */
+.konbini--terr {
+  border-color: rgba(120, 185, 220, 0.16);
+}
+
+.konbini--terr:hover {
+  border-color: rgba(150, 220, 255, 0.46);
+  box-shadow:
+    0 18px 46px rgba(0, 0, 0, 0.52),
+    0 0 34px rgba(120, 205, 255, 0.13);
+}
+
+.konbini__stage--terr {
+  background:
+    radial-gradient(ellipse 62% 52% at 50% 48%, rgba(90, 190, 230, 0.17), transparent 70%),
+    radial-gradient(ellipse 95% 74% at 50% 0%, rgba(70, 150, 210, 0.09), transparent 66%),
+    linear-gradient(180deg, #071019, #04090f);
+}
+
+.konbini__stage--terr::before {
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(220, 242, 255, 0.6) 0.6px, transparent 1px),
+    radial-gradient(circle at 82% 12%, rgba(200, 232, 255, 0.5) 0.7px, transparent 1.1px),
+    radial-gradient(circle at 68% 30%, rgba(255, 244, 220, 0.42) 0.6px, transparent 1px),
+    radial-gradient(circle at 28% 36%, rgba(210, 236, 255, 0.4) 0.6px, transparent 1px),
+    radial-gradient(circle at 90% 44%, rgba(180, 225, 255, 0.36) 0.6px, transparent 1px),
+    radial-gradient(circle at 44% 8%, rgba(255, 255, 255, 0.4) 0.5px, transparent 1px),
+    radial-gradient(circle at 6% 58%, rgba(190, 228, 255, 0.3) 0.5px, transparent 1px);
+}
+
+.konbini__badge--terr {
+  color: #9fe2ff;
+  background: rgba(18, 44, 62, 0.6);
+  border-color: rgba(143, 216, 255, 0.28);
+}
+
+.konbini__badge-dot--terr {
+  background: #9fe2ff;
+  animation-duration: 2.4s;
+  box-shadow: 0 0 8px rgba(159, 226, 255, 0.8);
+}
+
+.konbini__enter--terr {
+  color: #a8e2ff;
+  background: rgba(10, 22, 32, 0.72);
+  border-color: rgba(143, 216, 255, 0.3);
+}
+
+.konbini:hover .konbini__enter--terr {
+  background: rgba(143, 216, 255, 0.14);
+  border-color: #a8e2ff;
+}
+
+.konbini__eta--terr {
+  color: #9fe2ff;
+  background: rgba(143, 216, 255, 0.1);
+  border-color: rgba(143, 216, 255, 0.3);
+}
+
+.terr {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--trx)) rotateY(var(--try));
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.terr__float {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: terr-float 9s ease-in-out infinite;
+}
+
+.terr__art {
+  width: min(94%, 300px);
+  height: auto;
+  margin-bottom: 14px;
+  filter:
+    drop-shadow(0 18px 26px rgba(0, 0, 0, 0.48))
+    drop-shadow(0 0 20px rgba(110, 205, 255, 0.13));
+  transition: filter 0.4s ease;
+}
+
+.konbini:hover .terr__art {
+  filter:
+    drop-shadow(0 20px 28px rgba(0, 0, 0, 0.5))
+    drop-shadow(0 0 28px rgba(130, 218, 255, 0.22));
+}
+
+@keyframes terr-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@media (min-width: 1181px) {
+  .terr__art {
+    width: min(96%, 296px);
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .terr__art {
+    width: min(82%, 342px);
+  }
+}
+
+@media (max-width: 720px) {
+  .terr__art {
+    width: min(82%, 248px);
+    margin-bottom: 8px;
+  }
 }
 
 </style>
