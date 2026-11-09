@@ -2,11 +2,29 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useResume } from '../data/resume'
-import HousePreviewCard from '../components/HousePreviewCard.vue'
-import LighthouseCard from '../components/LighthouseCard.vue'
+import CardThumb from '../components/CardThumb.vue'
 
 const { t } = useResume()
 const router = useRouter()
+
+const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
+
+/** 小屋卡：日/夜两版，均取自原 3D 场景按卡片显示尺寸 2 倍渲染的截图 */
+const HOUSE_THUMB = {
+  night: { lg: asset('thumbs/house-night-2x.webp'), sm: asset('thumbs/house-night-sm.webp') },
+  day: { lg: asset('thumbs/house-day-2x.webp'), sm: asset('thumbs/house-day-sm.webp') },
+  nightLqip:
+    'data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAABQAwCdASoYAA8APulep00pJSOiMAgBIB0JYwAAW+kf41XXEAD+8qcOsGOWwLPzjYc9MPMLlLIBQZAk0PBhmNdK5ZymQF0DWNB1UBAcAAA=',
+  dayLqip:
+    'data:image/webp;base64,UklGRnwAAABXRUJQVlA4IHAAAADQAwCdASoYAA8APulgqE0pJaQiMAgBIB0JYwAAW+jEnXp4vDFgDwAA/vDBY2wRG9bQXJdv7QwHvreId+lNcz5QQkCBj5zFOlxNypAkpCFfuukVxYj3JwD1gDG5oYxLQdA8m3es57PSyvj5mM9wAAAA',
+}
+
+/** 灯塔卡：场景本身是夜景，日夜共用同一版 */
+const SEA_THUMB = {
+  night: { lg: asset('thumbs/sea-night-2x.webp'), sm: asset('thumbs/sea-night-sm.webp') },
+  nightLqip:
+    'data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAABwAwCdASoYAA8APuleqE0pJSQiMAgBIB0JZwC+SCHfUXqV3AAA/vQdBHgLXK+y6yxYlXugAAA=',
+}
 
 const mounted = ref(false)
 
@@ -103,45 +121,14 @@ function enterTerrarium() {
   router.push('/terrarium')
 }
 
-/* 小屋卡片：整卡进入详情页；拖拽旋转结束后不误触进入 */
-let housePress: { x: number; y: number } | null = null
-
-function onHouseDown(e: PointerEvent) {
-  housePress = { x: e.clientX, y: e.clientY }
-}
-
+/* 小屋卡片：整卡进入详情页 */
 function enterHouse() {
   router.push('/house')
 }
 
-function onHouseClick(e: MouseEvent) {
-  if (housePress) {
-    const moved = Math.hypot(e.clientX - housePress.x, e.clientY - housePress.y)
-    housePress = null
-    // 有位移说明是拖拽旋转，不当作点击
-    if (moved > 8) return
-  }
-  enterHouse()
-}
-
-/* 灯塔卡片：同样整卡进入全屏场景，拖拽旋转后不误触 */
-let seaPress: { x: number; y: number } | null = null
-
-function onSeaDown(e: PointerEvent) {
-  seaPress = { x: e.clientX, y: e.clientY }
-}
-
+/* 灯塔卡片：整卡进入全屏场景 */
 function enterLighthouse() {
   router.push('/lighthouse')
-}
-
-function onSeaClick(e: MouseEvent) {
-  if (seaPress) {
-    const moved = Math.hypot(e.clientX - seaPress.x, e.clientY - seaPress.y)
-    seaPress = null
-    if (moved > 8) return
-  }
-  enterLighthouse()
 }
 
 onMounted(() => {
@@ -422,8 +409,7 @@ onMounted(() => {
         role="link"
         tabindex="0"
         :aria-label="t.houseEnter"
-        @pointerdown="onHouseDown"
-        @click="onHouseClick"
+        @click="enterHouse"
         @keydown.enter="enterHouse"
         @keydown.space.prevent="enterHouse"
       >
@@ -433,12 +419,12 @@ onMounted(() => {
             {{ t.houseStatus }}
           </span>
 
-          <HousePreviewCard :fail-text="t.houseFail" />
+          <CardThumb v-bind="HOUSE_THUMB" />
 
-          <span class="konbini__enter konbini__enter--house konbini__enter--drag">
-            {{ t.houseDrag }}
+          <span class="konbini__enter konbini__enter--house">
+            {{ t.houseEnter }}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
-              <path d="M4 8h10a3.5 3.5 0 0 1 0 7H5M8 5 4 8l4 3" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </span>
         </div>
@@ -451,8 +437,6 @@ onMounted(() => {
             </h3>
             <span class="konbini__eta">3D</span>
           </div>
-
-          <p class="konbini__enter-line">{{ t.houseEnter }}</p>
 
           <p class="konbini__desc">{{ t.houseDesc }}</p>
 
@@ -469,8 +453,7 @@ onMounted(() => {
         role="link"
         tabindex="0"
         :aria-label="t.lighthouseEnter"
-        @pointerdown="onSeaDown"
-        @click="onSeaClick"
+        @click="enterLighthouse"
         @keydown.enter="enterLighthouse"
         @keydown.space.prevent="enterLighthouse"
       >
@@ -480,12 +463,12 @@ onMounted(() => {
             {{ t.lighthouseStatus }}
           </span>
 
-          <LighthouseCard :fail-text="t.lighthouseFail" />
+          <CardThumb v-bind="SEA_THUMB" />
 
-          <span class="konbini__enter konbini__enter--sea konbini__enter--drag">
-            {{ t.lighthouseDrag }}
+          <span class="konbini__enter konbini__enter--sea">
+            {{ t.lighthouseEnter }}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
-              <path d="M4 8h10a3.5 3.5 0 0 1 0 7H5M8 5 4 8l4 3" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </span>
         </div>
@@ -498,8 +481,6 @@ onMounted(() => {
             </h3>
             <span class="konbini__eta">3D</span>
           </div>
-
-          <p class="konbini__enter-line">{{ t.lighthouseEnter }}</p>
 
           <p class="konbini__desc">{{ t.lighthouseDesc }}</p>
 
@@ -537,6 +518,11 @@ onMounted(() => {
   transform: translateY(-1px) scale(0.994);
 }
 
+.konbini:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
 /* 进入 3D 场景的提示 */
 .konbini__enter {
   position: absolute;
@@ -572,14 +558,9 @@ onMounted(() => {
   transition: transform 0.25s ease;
 }
 
-/* ================= 小屋 3D 预览卡 ================= */
+/* ================= 小屋静态预览卡 ================= */
 .konbini--house {
   cursor: pointer;
-}
-
-/* 卡片不可点击，按下时不回弹，避免拖拽旋转时整卡抖动 */
-.konbini--house:active {
-  transform: translateY(-4px);
 }
 
 .konbini__stage.konbini__stage--house {
@@ -620,21 +601,9 @@ onMounted(() => {
   transform: none;
 }
 
-/* 触屏也保留「可滑动」提示；提示不挡画面，只占右下角一行 */
-
-/* 3D 降级时不提示拖拽 */
-.konbini__stage.konbini__stage--house:has(.house-preview__ph.is-failed) .konbini__enter--house {
-  display: none;
-}
-
 /* ================= 海边灯塔卡 ================= */
 .konbini--sea {
   cursor: pointer;
-}
-
-/* 拖拽旋转时整卡不回弹，避免与指针位移打架 */
-.konbini--sea:active {
-  transform: translateY(-4px);
 }
 
 .konbini__stage.konbini__stage--sea {
@@ -666,14 +635,6 @@ onMounted(() => {
   right: 16px;
   transform: none;
   pointer-events: none;
-}
-
-.konbini__enter--drag svg {
-  transform: rotate(-16deg);
-}
-
-.konbini__stage.konbini__stage--sea:has(.lh-preview__ph.is-failed) .konbini__enter--sea {
-  display: none;
 }
 
 /* ================= 3D 舞台 ================= */
@@ -1076,15 +1037,6 @@ onMounted(() => {
   border: 1px solid var(--amber-border);
   border-radius: 999px;
   padding: 2px 9px;
-}
-
-/* 标题下的「点击进入」提示 */
-.konbini__enter-line {
-  margin: 0 0 14px;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: 0.05em;
-  color: var(--accent);
 }
 
 .konbini__desc {

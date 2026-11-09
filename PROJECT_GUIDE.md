@@ -69,7 +69,7 @@ blog-frontend/
 | `src/utils/scroll.ts` | 锚点平滑滚动工具（导航偏移 72px） |
 | `src/main.ts` | 应用入口：挂载 Vue 与路由 |
 | `src/App.vue` | 外壳：导航栏 + 路由出口 |
-| `index.html` | 入口 HTML、标题、favicon、禁止缓存 meta |
+| `index.html` | 入口 HTML、标题、favicon、社交分享与 canonical |
 | `vite.config.ts` | 构建配置（`base: './'` 适配子路径部署） |
 | `.github/workflows/deploy.yml` | 每次 push 自动构建并发布到 GitHub Pages |
 

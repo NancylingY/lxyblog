@@ -2,7 +2,7 @@
  * /lighthouse 灯塔全屏页
  * - 结构沿用 /house：懒加载 three、单 context、左上返回、Esc 退出、离开即销毁
  * - 右上角场景控件：开关灯塔光束（水面高光带、耀斑一起淡出）
- * - 相机沿用 houseDrag，限位与卡片一致；加载期显示静态占位
+ * - 相机沿用 houseDrag，限位与 /house 一致；加载期显示静态占位
  */
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'

@@ -105,9 +105,7 @@ export interface Translation {
   houseDesc: string
   houseStatus: string
   houseTags: string[]
-  houseDrag: string
   houseEnter: string
-  houseFail: string
 
   /** 海边灯塔夜景卡 */
   lighthouseTitle: string
@@ -115,8 +113,6 @@ export interface Translation {
   lighthouseDesc: string
   lighthouseStatus: string
   lighthouseTags: string[]
-  lighthouseDrag: string
-  lighthouseFail: string
   lighthouseEnter: string
   lighthouseBeamOff: string
   lighthouseBeamOn: string
@@ -244,20 +240,16 @@ const zh: Translation = {
   houseTitleEn: 'Cozy House',
   houseDesc:
     '首屏同款小屋模型的实时 3D 预览：与首屏共用同一套加载与光照，跟随页面日夜切换，夜里窗户与门廊灯会亮起。',
-  houseStatus: '实时渲染',
+  houseStatus: '静态预览',
   houseTags: ['Three.js', 'KTX2', '昼夜灯光'],
-  houseDrag: '拖拽旋转',
   houseEnter: '点击进入 3D 场景',
-  houseFail: '3D 预览不可用',
 
   lighthouseTitle: '海边灯塔夜景',
   lighthouseTitleEn: 'Seaside Lighthouse',
   lighthouseDesc:
     '深夜海岸的实时 3D 场景：海面完全由着色器生成，三组不同方向与波长的正弦波叠加高频噪声，近岸碎浪与泡沫随浪滚动；灯塔光束以聚光灯加锥形加法外壳模拟体积光，每 8 秒扫过一圈，扫到镜头时有轻微耀斑。拖拽旋转、横向滑动，可绕灯塔自由观察。',
-  lighthouseStatus: '实时渲染',
+  lighthouseStatus: '静态预览',
   lighthouseTags: ['Three.js', 'GLSL 海面', '体积光柱', '60 FPS'],
-  lighthouseDrag: '拖拽旋转',
-  lighthouseFail: '3D 预览不可用',
   lighthouseEnter: '点击进入灯塔 3D 场景',
   lighthouseBeamOff: '关闭光束',
   lighthouseBeamOn: '开启光束',
@@ -381,20 +373,16 @@ const en: Translation = {
   houseTitleEn: '小屋 3D 实例',
   houseDesc:
     'A live 3D preview of the same house model used in the hero, sharing one loader and lighting rig. It follows the site theme — windows and the porch lamp light up at night.',
-  houseStatus: 'Live render',
+  houseStatus: 'Still preview',
   houseTags: ['Three.js', 'KTX2', 'Day–Night'],
-  houseDrag: 'Drag to rotate',
   houseEnter: 'Enter the 3D scene',
-  houseFail: '3D preview unavailable',
 
   lighthouseTitle: 'Seaside Lighthouse',
   lighthouseTitleEn: '海边灯塔夜景',
   lighthouseDesc:
     'A live 3D night scene on the coast: the ocean is generated entirely in a shader — three sine waves with different directions and wavelengths plus high-frequency noise, with breaking chop and scrolling foam near the shore. The lighthouse beam is a spotlight plus an additive cone shell standing in for volumetric light, sweeping once every 8 seconds with a subtle lens flare when it crosses the camera.',
-  lighthouseStatus: 'Live render',
+  lighthouseStatus: 'Still preview',
   lighthouseTags: ['Three.js', 'GLSL Ocean', 'Volumetric Beam', '60 FPS'],
-  lighthouseDrag: 'Drag to rotate',
-  lighthouseFail: '3D preview unavailable',
   lighthouseEnter: 'Enter the lighthouse 3D scene',
   lighthouseBeamOff: 'Turn beam off',
   lighthouseBeamOn: 'Turn beam on',

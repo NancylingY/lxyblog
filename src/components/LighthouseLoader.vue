@@ -2,7 +2,6 @@
  * 灯塔加载进度：百分比 + 当前阶段 + 进度条 / 失败重试
  * - 百分比全部来自场景真实事件：GLTFLoader onProgress 的 loaded/total 字节，
  *   以及解码器 / 着色器阶段的开始与完成；不用定时器凑进度
- * - 卡片与全屏页共用，compact 只压缩排版，不改变数据口径
  */
 <script setup lang="ts">
 import { computed } from 'vue'
@@ -13,7 +12,6 @@ const props = defineProps<{
   progress: LighthouseProgress | null
   failed: boolean
   failedText: string
-  compact?: boolean
 }>()
 const emit = defineEmits<{ retry: [] }>()
 const { t } = useResume()
@@ -53,9 +51,9 @@ const stageText = computed(() => {
 </script>
 
 <template>
-  <div class="lh-load" :class="{ 'is-compact': compact, 'is-failed': failed }" role="status" aria-live="polite">
+  <div class="lh-load" :class="{ 'is-failed': failed }" role="status" aria-live="polite">
     <template v-if="!failed">
-      <svg v-if="!compact" class="lh-load__icon" viewBox="0 0 64 52" fill="none" aria-hidden="true">
+      <svg class="lh-load__icon" viewBox="0 0 64 52" fill="none" aria-hidden="true">
         <path d="M23 46h18M27 46l2-26h8l2 26" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
         <path d="M25 20h14M28 14h8v6h-8z" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
         <path d="M14 8l8 3M50 8l-8 3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
@@ -90,18 +88,6 @@ const stageText = computed(() => {
   color: var(--ink-dim);
   font-family: var(--font-mono);
   pointer-events: none;
-}
-
-.lh-load.is-compact {
-  width: 100%;
-  align-items: stretch;
-  gap: 6px;
-}
-
-/* 卡片有 3D 倾斜，右侧百分比贴边会被裁掉：紧凑态改成左对齐内联 */
-.lh-load.is-compact .lh-load__row {
-  justify-content: flex-start;
-  gap: 8px;
 }
 
 .lh-load__icon {

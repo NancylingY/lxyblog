@@ -537,8 +537,8 @@ export async function createLighthouseScene(
   /* ================= 场	景元素 ================= */
   const skyMat = new THREE.ShaderMaterial({
     uniforms: {
-      uTopColor: { value: new THREE.Color(0x050a16) },
-      uHorizonColor: { value: new THREE.Color(0x14314a) },
+      uTopColor: { value: new THREE.Color(0x0c1830) },
+      uHorizonColor: { value: new THREE.Color(0x22476b) },
       uMoonDir: { value: new THREE.Vector3(-0.55, 0.42, -0.72).normalize() },
     },
     vertexShader: SKY_VERT,
@@ -591,12 +591,12 @@ export async function createLighthouseScene(
   display.add(moonSprite)
 
   /* ================= 灯光 ================= */
-  const moon = new THREE.DirectionalLight(0xa9c8ff, 1.45)
+  const moon = new THREE.DirectionalLight(0xa9c8ff, 1.6)
   moon.position.copy(moonDir).multiplyScalar(24)
   // 镜头方向补一点冷光，让塔身、礁石在夜空里露出剪影轮廓
-  const fill = new THREE.DirectionalLight(0x8fb4e0, 0.5)
+  const fill = new THREE.DirectionalLight(0x8fb4e0, 0.62)
   fill.position.copy(VIEW_DIR).multiplyScalar(20)
-  const hemi = new THREE.HemisphereLight(0x223a5c, 0x060a10, 0.5)
+  const hemi = new THREE.HemisphereLight(0x223a5c, 0x060a10, 0.68)
   scene.add(moon, fill, hemi)
 
   /* ================= 灯塔占位 / 模型 ================= */
@@ -713,10 +713,10 @@ export async function createLighthouseScene(
     uBeamDir: { value: new THREE.Vector3(0, 0, 1) },
     uBeamPos: { value: new THREE.Vector3(0, 3.4, 0) },
     uBeamColor: { value: new THREE.Color(0xffcf8f) },
-    uSkyColor: { value: new THREE.Color(0x0b2233) },
-    uDeepColor: { value: new THREE.Color(0x061019) },
-    uShallowColor: { value: new THREE.Color(0x0e3d46) },
-    uHorizonColor: { value: new THREE.Color(0x14314a) },
+    uSkyColor: { value: new THREE.Color(0x12344d) },
+    uDeepColor: { value: new THREE.Color(0x0c1c2c) },
+    uShallowColor: { value: new THREE.Color(0x175a66) },
+    uHorizonColor: { value: new THREE.Color(0x22476b) },
     uBeamStrength: { value: 0.55 },
     uBeamGlint: { value: glintOn ? 1 : 0 },
   }
@@ -748,8 +748,23 @@ export async function createLighthouseScene(
     camera.position.copy(frame.viewDir).multiplyScalar(baseDist * zoomCur).add(frame.target)
     camera.lookAt(frame.target)
   }
+  /**
+   * 竖屏水平视角只有约 15°，而光柱锥角约 20°：距离再远，锥体也必然横贯整屏，
+   * 看起来就是一条雾带而不是一束光。这里按纵横比把锥体收窄，横屏保持原尺寸。
+   */
+  const beamNarrow = (aspect: number) =>
+    THREE.MathUtils.lerp(0.4, 1, THREE.MathUtils.smoothstep(aspect, 0.62, 1.15))
   const fitCamera = (aspect: number) => {
-    baseDist = frameDistance(frame, camera, aspect, 1.02)
+    const wide = frameDistance(frame, camera, aspect, 1.02)
+    // 竖屏按宽度拟合会把相机推到 50+ 单位外（灯塔只剩屏高 1/6），
+    // 远距 + 窄视角会把光柱压成一条低对比的雾带，所以竖屏改用高度拟合
+    const tall = frameDistance(frame, camera, 1, 1.02)
+    const portrait = 1 - THREE.MathUtils.smoothstep(aspect, 0.62, 1.05)
+    baseDist = THREE.MathUtils.lerp(wide, tall, portrait)
+    const narrow = beamNarrow(aspect)
+    beamShell.scale.set(narrow, narrow, 1)
+    beamCore.scale.set(narrow, narrow, 1)
+    mist.scale.set(7 * narrow, 7 * narrow, 1)
     applyCamera()
   }
 
@@ -868,7 +883,7 @@ export async function createLighthouseScene(
   const lampWorld = new THREE.Vector3()
   const toCamera = new THREE.Vector3()
   const beamQuat = new THREE.Quaternion()
-  const baseExposure = 1.02
+  const baseExposure = 1.4
   let flareLevel = 0
   let frameCount = 0
   let fpsTimer = 0
@@ -902,30 +917,33 @@ export async function createLighthouseScene(
         applyCamera()
       }
       beamPivot.rotation.y = beamAngle
-      beamMat.uniforms.uStrength.value = pulse * beamLevel
-      beamCoreMat.uniforms.uStrength.value = pulse * 1.5 * beamLevel
+      // 光束方向（世界空间）与镜头夹角：正对镜头时锥体会糊成一片，按夹角淡出
+      beamDirWorld.set(0, -0.03, 1).applyQuaternion(beamPivot.getWorldQuaternion(beamQuat))
+      beamPivot.getWorldPosition(lampWorld)
+      toCamera.copy(camera.position).sub(lampWorld).normalize()
+      const align = beamDirWorld.dot(toCamera)
+      // 正对镜头时锥体末端几乎贴到相机，再低的透明度也会铺满整屏 →
+      // 直接收到 0，改用耀斑与曝光提升让人「看到光」而不是看到一层雾
+      const beamFade = 1 - THREE.MathUtils.smoothstep(align, 0.62, 0.94)
+      beamMat.uniforms.uStrength.value = pulse * beamLevel * beamFade
+      beamCoreMat.uniforms.uStrength.value = pulse * 1.5 * beamLevel * beamFade
       beamMat.uniforms.uTime.value = t
       beamCoreMat.uniforms.uTime.value = t
-      mist.material.opacity = 0.13 * pulse * beamLevel
-      spot.intensity = 420 * pulse * beamLevel
+      mist.material.opacity = 0.13 * pulse * beamLevel * beamFade
+      spot.intensity = 310 * pulse * beamLevel * beamFade
       waterUniforms.uTime.value = t
       waterUniforms.uBeamStrength.value = 0.55 * pulse * beamLevel
-      if (lampMat) lampMat.emissiveIntensity = 2.4 * (0.75 + 0.35 * pulse)
-      lampGlow.material.opacity = 0.28 + 0.22 * pulse
-      lampLight.intensity = 6.5 * pulse
+      if (lampMat) lampMat.emissiveIntensity = 1.85 * (0.75 + 0.35 * pulse)
+      lampGlow.material.opacity = 0.22 + 0.16 * pulse
+      lampLight.intensity = 4.6 * pulse
       moonSprite.material.opacity = 0.5 + 0.06 * Math.sin(t * 0.5)
 
-      // 光束方向（世界空间）与镜头夹角：正对镜头时轻微耀斑
-      beamDirWorld.set(0, -0.03, 1).applyQuaternion(beamPivot.getWorldQuaternion(beamQuat))
       waterUniforms.uBeamDir.value.copy(beamDirWorld)
-      beamPivot.getWorldPosition(lampWorld)
       waterUniforms.uBeamPos.value.copy(lampWorld)
       beamMat.uniforms.uOrigin.value.copy(lampWorld)
       beamCoreMat.uniforms.uOrigin.value.copy(lampWorld)
-      toCamera.copy(camera.position).sub(lampWorld).normalize()
       let target = 0
       if (!env.reduced) {
-        const align = beamDirWorld.dot(toCamera)
         target = Math.max(0, (align - 0.62) / 0.38) ** 2 * 0.42 * beamLevel
       }
       flareLevel += (target - flareLevel) * (dt > 0 ? 1 - Math.exp(-dt * 9) : 1)

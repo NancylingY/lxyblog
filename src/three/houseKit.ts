@@ -35,14 +35,14 @@ export interface LightPreset {
 export const LIGHT_DAY: LightPreset = {
   hemiSky: new THREE.Color(0xf1f7ff),
   hemiGround: new THREE.Color(0xe6d9bf),
-  hemiIntensity: 1.05,
+  hemiIntensity: 1.12,
   keyColor: new THREE.Color(0xfff3e0),
-  keyIntensity: 2.15,
+  keyIntensity: 2.32,
   keyPos: new THREE.Vector3(4.5, 7, 6),
   lampIntensity: 0.16,
   glassEmissive: 0.06,
   lampEmissive: 0.2,
-  exposure: 0.98,
+  exposure: 1.06,
   surface: new THREE.Color(0xe9e1d3),
   shadowOpacity: 0.42,
 }
@@ -50,14 +50,15 @@ export const LIGHT_DAY: LightPreset = {
 export const LIGHT_NIGHT: LightPreset = {
   hemiSky: new THREE.Color(0x1b2a46),
   hemiGround: new THREE.Color(0x0a0f18),
-  hemiIntensity: 0.34,
+  hemiIntensity: 0.52,
   keyColor: new THREE.Color(0x8fb4ff),
-  keyIntensity: 0.62,
+  keyIntensity: 0.88,
   keyPos: new THREE.Vector3(-4.5, 7.5, 4),
   lampIntensity: 1.15,
-  glassEmissive: 0.95,
-  lampEmissive: 1.5,
-  exposure: 1.06,
+  // 曝光提到 1.52 后，自发光按同一比例回压，避免灯窗与门廊灯糊成白块
+  glassEmissive: 0.66,
+  lampEmissive: 1.04,
+  exposure: 1.52,
   surface: new THREE.Color(0x1a2833),
   shadowOpacity: 0.62,
 }
@@ -692,64 +693,6 @@ export async function acquireWebGLContext(timeoutMs = 1500): Promise<object> {
     await new Promise((resolve) => setTimeout(resolve, 60))
   }
   return claimWebGLContext()
-}
-
-/* ================= 同页多张 3D 卡的上下文仲裁 ================= */
-/*
- * 「其他」页同时有多张 3D 卡，但全站只允许一个 WebGL context。
- * 每张卡上报自己的可见比例；抢不到 context 的卡在可见度明显更高时，
- * 请求当前持有者立刻让出（让出者回到静态占位，稍后按可见度再抢回）。
- */
-interface ContextCandidate {
-  ratio: number
-  release: () => void
-}
-
-const candidates = new Map<string, ContextCandidate>()
-let contextOwnerId: string | null = null
-let lastYieldAt = 0
-
-export function registerContextCandidate(id: string, release: () => void): void {
-  candidates.set(id, { ratio: 0, release })
-}
-
-export function unregisterContextCandidate(id: string): void {
-  candidates.delete(id)
-  if (contextOwnerId === id) contextOwnerId = null
-}
-
-export function setContextCandidateRatio(id: string, ratio: number): void {
-  const entry = candidates.get(id)
-  if (entry) entry.ratio = ratio
-}
-
-export function markContextOwner(id: string): void {
-  contextOwnerId = id
-}
-
-export function clearContextOwner(id: string): void {
-  if (contextOwnerId === id) contextOwnerId = null
-}
-
-/** 自己的可见度明显高于当前持有者时，请它让出 context */
-export function yieldContextTo(id: string): void {
-  const holder = contextOwnerId
-  if (!holder || holder === id) return
-  const me = candidates.get(id)
-  const other = candidates.get(holder)
-  if (!me || !other) return
-  if (performance.now() - lastYieldAt < 1500) return
-  /*
-   * 两张 3D 卡可能同时几乎占满视口（同一行、或页面滚到底时相邻两行都完整可见），
-   * 此时 0.15 的差值门槛永远达不到，后进场的那张会一直卡在「加载 3D 引擎」。
-   * 因此补一条：自己完整可见、且比持有者更完整时直接让出；
-   * 两者同样完整时保持现状，避免来回抢。
-   */
-  const meFull = me.ratio >= 0.99
-  if ((meFull && me.ratio > other.ratio) || (me.ratio > 0.2 && me.ratio > other.ratio + 0.15)) {
-    lastYieldAt = performance.now()
-    other.release()
-  }
 }
 
 /* ================= 阴影贴图 ================= */

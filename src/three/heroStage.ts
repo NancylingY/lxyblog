@@ -34,7 +34,7 @@ import {
 } from './houseKit'
 import { createHouseDrag } from './houseDrag'
 
-// 展示台的默认朝向与交互限位（拖拽逻辑与「其他」页共用 houseDrag）
+// 展示台的默认朝向与交互限位（拖拽逻辑与 /house 共用 houseDrag）
 const BASE_YAW = -0.16
 const BASE_PITCH = -0.02
 

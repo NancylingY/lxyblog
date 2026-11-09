@@ -129,8 +129,8 @@ onBeforeUnmount(() => {
   inset: 0;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 74% 62% at 50% 44%, #121e29, #04080e 74%),
-    #04080e;
+    radial-gradient(ellipse 74% 62% at 50% 44%, #1c2c3d, #0a131d 74%),
+    #0a131d;
   cursor: grab;
   /* 全屏页没有可滚动内容：接管全部手势，双指捏合才不会被浏览器页面缩放吃掉 */
   touch-action: none;
