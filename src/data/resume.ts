@@ -2,7 +2,7 @@
  * 博客数据 —— 全部内容的单一数据源
  * 修改这里，页面内容会同步更新
  *
- * 中英文：`profile`/`education` 等原始字段仍为中文，英文版见 `translations.ts`。
+ * 中英文：`profile` 等原始字段仍为中文，英文版见 `translations.ts`。
  * 组件请使用下方导出的 `useResume()` 响应式组合函数，切换语言后内容自动更新。
  */
 import { computed } from 'vue'
@@ -31,28 +31,18 @@ export const profile = {
   gender: '男',
   phone: '14749334143',
   email: 'water792383@qq.com',
-  role: '全栈开发',
-  slogan: '用代码把想法变成产品',
-  intro: '具备前后端全栈开发与大数据分析基础能力，从数据中挖掘价值，用 AI 创造美好，也享受把想法变成可用产品的过程。',
+  role: '产品工程师',
+  slogan: '用设计、代码与 AI，把想法变成产品。',
+  intro: '独立产品工程师，负责从需求拆解、界面设计到上线交付的完整链路。已交付 6 个 Web / 移动端项目，覆盖医疗、教务、点餐与推荐系统，擅长把复杂流程整理成清晰可用的界面。',
 }
 
 export const advantages: string[] = [
-  '独立完成从 0 到 1 的全栈开发，从数据库设计、后端 API 到前端页面，一人交付完整可上线产品',
-  '熟练驾驭 AI 辅助开发，使用 Copilot、DeepSeek、Codex 等工具，编码、调试、文档效率成倍提升',
-  '双后端技术栈落地经验，Spring Boot / FastAPI 均有完整项目，独立完成 RESTful API 设计、权限鉴权与 SQL 调优',
-  'Vue 3 响应式前端能力，Composition API + TypeScript，覆盖 Web 端与 Uni-app 移动端多端适配',
-  '数据驱动产品决策，用 Pandas / NumPy 完成数据清洗与建模分析，结合 ECharts 做可视化呈现',
-  '熟悉容器化部署与发布，Docker 打包、GitHub Pages 静态托管，独立完成项目上线与持续迭代',
+  '端到端负责：从问题定义、体验设计到工程交付，独立完成完整产品闭环。',
+  '设计工程思维：把界面、交互与代码视为同一个系统，而不是分离的交付环节。',
+  'AI 协作工作流：用模型辅助需求梳理、原型与代码草稿，把想法到可运行原型的路径缩短。',
+  '克制的美学判断：信息层级、节奏与动效都为清晰和长期可维护服务。',
+  '以结果验证：小步上线、真实反馈、持续迭代，而不是堆砌功能。',
 ]
-
-export const education = {
-  school: '广州软件学院',
-  degree: '本科',
-  major: '数据科学与大数据技术',
-  period: '2023-2027',
-  rank: '前 10%',
-  courses: ['数据结构', 'Linux 操作系统', '数据可视化', '数据仓库与数据挖掘', '算法分析与设计'],
-}
 
 export const skills = [
   {
@@ -89,7 +79,7 @@ export const projects: Project[] = [
       { group: '前端', items: ['Vue 3 (Composition API)', 'TypeScript', 'Pinia', 'Element Plus', 'ECharts', 'Vite'] },
       { group: '工具', items: ['Git', 'RESTful API'] },
     ],
-    color: '#38d9c9',
+    color: '#4fbfb5',
     logo: 'https://aka.doubaocdn.com/s/MUdRjMVOC0',
     video: './videos/ehr-demo.mp4',
   },
@@ -109,7 +99,7 @@ export const projects: Project[] = [
       { group: '前端', items: ['Vue 3 (Composition API)', 'TypeScript', 'Element Plus', 'SCSS', 'Vite'] },
       { group: '协作&测试', items: ['Git', 'Postman'] },
     ],
-    color: '#3ddc84',
+    color: '#59bf8c',
     logo: 'https://aka.doubaocdn.com/s/yz7Oa4DMBL',
     video: './videos/smartread-demo.mp4',
   },
@@ -129,7 +119,7 @@ export const projects: Project[] = [
       { group: '前端', items: ['Vue 3', 'Vite', 'Pinia', 'Element Plus', 'Axios', 'Sass'] },
       { group: '工具', items: ['Maven', 'Git', 'RESTful API'] },
     ],
-    color: '#56c8ff',
+    color: '#5fa8c8',
     logo: 'https://aka.doubaocdn.com/s/SpZhnBu9Vl',
     video: './videos/canteen-demo.mp4',
   },
@@ -147,7 +137,7 @@ export const projects: Project[] = [
       { group: '桌面端', items: ['Neutralino', 'WebView2'] },
       { group: '测试验证', items: ['Playwright（开发用）'] },
     ],
-    color: '#8be04f',
+    color: '#8fbe6f',
     logo: 'https://aka.doubaocdn.com/s/rGgfVovKT0',
     video: './videos/happywoo-demo.mp4',
   },
@@ -168,7 +158,7 @@ export const projects: Project[] = [
       { group: '前端', items: ['Vue 3 (Composition API)', 'TypeScript', 'Uni-app', 'SCSS', 'Vite'] },
       { group: '工具', items: ['Git', 'Swagger', 'Postman'] },
     ],
-    color: '#ffb454',
+    color: '#d9a05f',
     logo: 'https://aka.doubaocdn.com/s/Kl8pVQGL8i',
   },
   {
@@ -187,7 +177,7 @@ export const projects: Project[] = [
       { group: 'UI 组件库', items: ['uView UI', 'Uni-ui'] },
       { group: '工具', items: ['HBuilderX', 'Git', 'Axios'] },
     ],
-    color: '#c792ea',
+    color: '#a98cc4',
     logo: 'https://aka.doubaocdn.com/s/JF26gix0BC',
   },
 ]
@@ -218,18 +208,15 @@ export function useResume() {
 
   const advantages = computed(() => (isZh.value ? baseAdvantages : enContent.advantages))
 
-  const education = computed(() => (isZh.value ? baseEducation : enContent.education))
-
   const skills = computed(() => (isZh.value ? baseSkills : enContent.skills))
 
   const projects = computed(() => (isZh.value ? baseProjects : enContent.projects))
 
-  return { t, locale, profile, advantages, education, skills, projects }
+  return { t, locale, profile, advantages, skills, projects }
 }
 
 // —— 原始中文数据（保持原有导出名向后兼容，组件请改用 useResume）——
 const baseProfile = profile
 const baseAdvantages = advantages
-const baseEducation = education
 const baseSkills = skills
 const baseProjects = projects

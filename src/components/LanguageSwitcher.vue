@@ -28,7 +28,7 @@ const { locale, toggle } = useI18n()
   gap: 7px;
   padding: 7px 13px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--fs-base);
   font-weight: 600;
   color: var(--ink-dim);
   background: var(--bg-2);
@@ -47,7 +47,7 @@ const { locale, toggle } = useI18n()
   color: var(--accent);
   border-color: var(--accent);
   background: var(--accent-soft);
-  box-shadow: 0 0 18px rgba(61, 220, 132, 0.18);
+  box-shadow: var(--glow);
 }
 
 /* 点击轻微缩小再回弹 */

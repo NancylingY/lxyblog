@@ -163,12 +163,17 @@ export function createTerrariumScene(
   onPhase?: (isDay: boolean) => void,
 ): TerrariumControls {
   /* ------------------------------ renderer ------------------------------ */
+  const coarse = window.matchMedia('(pointer: coarse)').matches
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // 低端机（粗指针 + 内存 ≤4GB）关抗锯齿；DPR 统一封顶 1.5
+  const lowPower =
+    coarse && ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <= 4
   const renderer = new THREE.WebGLRenderer({
-    antialias: true,
+    antialias: !lowPower,
     alpha: false,
     powerPreference: 'high-performance',
   })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
   renderer.setSize(container.clientWidth, container.clientHeight)
   renderer.outputColorSpace = THREE.SRGBColorSpace
   renderer.toneMapping = THREE.ACESFilmicToneMapping
@@ -218,7 +223,7 @@ export function createTerrariumScene(
   controls.maxDistance = baseDistance * 1.8
   controls.minPolarAngle = Math.PI * 0.12
   controls.maxPolarAngle = Math.PI * 0.48
-  controls.autoRotate = true
+  controls.autoRotate = !reduced
   controls.autoRotateSpeed = 0.3
   controls.update()
 
@@ -293,7 +298,7 @@ export function createTerrariumScene(
   let dayness = 1
   let phase = 0
   let hold = 12
-  let auto = true
+  let auto = !reduced
   let targetDay = 1
   let lastLit = true
   let intro = 0
@@ -340,9 +345,10 @@ export function createTerrariumScene(
   /* ------------------------------ loop ------------------------------ */
   const clock = new THREE.Clock()
   let raf = 0
+  let running = true
 
   const frame = () => {
-    if (disposed) return
+    if (disposed || !running) return
     raf = requestAnimationFrame(frame)
     const dt = Math.min(clock.getDelta(), 0.05)
     const time = clock.elapsedTime
@@ -371,7 +377,7 @@ export function createTerrariumScene(
     fauna.update(time, day)
     sky.update(time, day)
 
-    if (intro < 1) {
+    if (!reduced && intro < 1) {
       intro = Math.min(1, intro + dt / 3.6)
       const eased = 1 - Math.pow(1 - intro, 3)
       const distance = THREE.MathUtils.lerp(baseDistance * 1.38, baseDistance, eased)
@@ -383,6 +389,20 @@ export function createTerrariumScene(
     renderer.render(scene, camera)
   }
   frame()
+
+  // 页面切到后台时停掉 rAF，回来再恢复，避免空转耗电
+  const onVisibilityChange = () => {
+    if (document.hidden) {
+      running = false
+      cancelAnimationFrame(raf)
+      raf = 0
+    } else if (!disposed && !running) {
+      running = true
+      clock.getDelta()
+      raf = requestAnimationFrame(frame)
+    }
+  }
+  document.addEventListener('visibilitychange', onVisibilityChange)
 
   /* ------------------------------ resize ------------------------------ */
   const resize = () => {
@@ -416,6 +436,7 @@ export function createTerrariumScene(
   const dispose = () => {
     disposed = true
     cancelAnimationFrame(raf)
+    document.removeEventListener('visibilitychange', onVisibilityChange)
     observer.disconnect()
     renderer.domElement.removeEventListener('webglcontextlost', onContextLost)
     renderer.domElement.removeEventListener('webglcontextrestored', onContextRestored)

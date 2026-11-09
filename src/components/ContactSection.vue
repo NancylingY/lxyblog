@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useResume } from '../data/resume'
+import { copyText } from '../utils/clipboard'
+import ContactKeycap from './ContactKeycap.vue'
 
 const { t, profile } = useResume()
 
@@ -25,13 +27,10 @@ onMounted(() => {
 onBeforeUnmount(() => observer?.disconnect())
 
 async function copyEmail() {
-  try {
-    await navigator.clipboard.writeText(profile.value.email)
-    copied.value = true
-    setTimeout(() => (copied.value = false), 1800)
-  } catch {
-    /* 剪贴板不可用时静默失败 */
-  }
+  const ok = await copyText(profile.value.email)
+  if (!ok) return
+  copied.value = true
+  setTimeout(() => (copied.value = false), 1800)
 }
 
 function callPhone() {
@@ -77,20 +76,24 @@ function mailTo() {
               {{ t.contactCall }}
             </button>
           </div>
+
+          <ContactKeycap />
         </div>
 
         <!-- 右侧：信息卡 -->
         <div class="contact__info">
-          <a class="contact__row" :href="`mailto:${profile.email}`" @click.prevent="mailTo">
-            <span class="contact__row-icon">@</span>
-            <span class="contact__row-body">
-              <span class="contact__row-label">{{ t.contactEmail }}</span>
-              <span class="contact__row-value">{{ profile.email }}</span>
-            </span>
-            <button class="contact__copy" :title="copied ? t.contactCopied : t.contactCopy" @click.stop="copyEmail">
+          <div class="contact__row">
+            <a class="contact__row-link" :href="`mailto:${profile.email}`" @click.prevent="mailTo">
+              <span class="contact__row-icon">@</span>
+              <span class="contact__row-body">
+                <span class="contact__row-label">{{ t.contactEmail }}</span>
+                <span class="contact__row-value">{{ profile.email }}</span>
+              </span>
+            </a>
+            <button class="contact__copy" :title="copied ? t.contactCopied : t.contactCopy" @click="copyEmail">
               {{ copied ? '✓' : t.contactCopy }}
             </button>
-          </a>
+          </div>
 
           <a class="contact__row" :href="`tel:${profile.phone}`" @click.prevent="callPhone">
             <span class="contact__row-icon">#</span>
@@ -120,17 +123,6 @@ function mailTo() {
       </div>
     </div>
   </section>
-
-  <footer class="footer">
-    <div class="container footer__inner">
-      <p class="footer__brand">
-        <span class="prompt">~</span> {{ profile.name }} · {{ profile.role }}
-      </p>
-      <p class="footer__meta">
-        © {{ new Date().getFullYear() }} {{ profile.enName }} · {{ t.footerBuilt }}
-      </p>
-    </div>
-  </footer>
 </template>
 
 <style scoped>
@@ -150,7 +142,7 @@ function mailTo() {
 
 .contact__line--prompt {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--fs-base);
   color: var(--ink-faint);
   margin-bottom: 20px;
 }
@@ -171,11 +163,11 @@ function mailTo() {
 
 .contact__accent {
   color: var(--accent);
-  text-shadow: 0 0 24px rgba(61, 220, 132, 0.3);
+  text-shadow: 0 0 24px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .contact__desc {
-  font-size: 15px;
+  font-size: var(--fs-lg);
   max-width: 380px;
   margin-bottom: 30px;
 }
@@ -184,46 +176,6 @@ function mailTo() {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 12px 24px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: 14.5px;
-  font-weight: 500;
-  border: 1px solid transparent;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-}
-
-.btn--primary {
-  background: var(--accent);
-  color: #04140b;
-  box-shadow: var(--glow);
-}
-
-.btn--primary:hover {
-  background: #56e79a;
-  box-shadow: 0 0 34px rgba(61, 220, 132, 0.4);
-}
-
-.btn--ghost {
-  border-color: var(--line-bright);
-  color: var(--ink);
-  background: transparent;
-}
-
-.btn--ghost:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-soft);
 }
 
 /* 信息列表 */
@@ -250,6 +202,15 @@ function mailTo() {
   background: var(--bg-3);
 }
 
+/* 行内可点击区域与复制按钮拆开，避免交互控件嵌套 */
+.contact__row-link {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .contact__row-icon {
   width: 40px;
   height: 40px;
@@ -259,10 +220,10 @@ function mailTo() {
   justify-content: center;
   border-radius: 10px;
   font-family: var(--font-mono);
-  font-size: 17px;
+  font-size: var(--fs-xl);
   color: var(--accent);
   background: var(--accent-soft);
-  border: 1px solid rgba(61, 220, 132, 0.25);
+  border: 1px solid var(--accent-border);
 }
 
 .contact__row-body {
@@ -273,13 +234,13 @@ function mailTo() {
 }
 
 .contact__row-label {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--ink-faint);
 }
 
 .contact__row-value {
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: var(--fs-lg);
   color: var(--ink);
   word-break: break-all;
 }
@@ -295,7 +256,7 @@ function mailTo() {
   margin-left: auto;
   flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--ink-dim);
   background: transparent;
   border: 1px solid var(--line);
@@ -322,33 +283,6 @@ function mailTo() {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
-}
-
-/* 页脚 */
-.footer {
-  border-top: 1px solid var(--line);
-  background: rgba(7, 9, 13, 0.6);
-  padding: 30px 0;
-}
-
-.footer__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.footer__brand {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  color: var(--ink-dim);
-}
-
-.footer__meta {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  color: var(--ink-faint);
 }
 
 @media (max-width: 860px) {

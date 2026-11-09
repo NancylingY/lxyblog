@@ -143,7 +143,7 @@ onBeforeUnmount(() => {
 .round-btn {
   position: fixed;
   top: 20px;
-  z-index: 6;
+  z-index: var(--z-popover);
   width: 40px;
   height: 40px;
   display: grid;
@@ -225,7 +225,7 @@ onBeforeUnmount(() => {
 .loader {
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: var(--z-loader);
   display: flex;
   align-items: center;
   justify-content: center;

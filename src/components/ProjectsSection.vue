@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import { useResume, type Project } from '../data/resume'
 
 const { t, projects } = useResume()
@@ -24,8 +25,94 @@ onMounted(() => {
 
 onBeforeUnmount(() => observer?.disconnect())
 
-function toggle(p: Project) {
-  activeId.value = activeId.value === p.id ? null : p.id
+const tiltCache = new WeakMap<
+  HTMLElement,
+  { rx: ReturnType<typeof gsap.quickTo>; ry: ReturnType<typeof gsap.quickTo> }
+>()
+
+function canTilt() {
+  return (
+    window.matchMedia('(pointer: fine)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+function getTilt(el: HTMLElement) {
+  let t = tiltCache.get(el)
+  if (!t) {
+    gsap.set(el, { transformPerspective: 1000 })
+    t = {
+      rx: gsap.quickTo(el, 'rotationX', { duration: 0.4, ease: 'power2.out' }),
+      ry: gsap.quickTo(el, 'rotationY', { duration: 0.4, ease: 'power2.out' }),
+    }
+    tiltCache.set(el, t)
+  }
+  return t
+}
+
+function onTilt(event: PointerEvent) {
+  if (!canTilt()) return
+  const el = event.currentTarget as HTMLElement
+  const rect = el.getBoundingClientRect()
+  const px = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
+  const py = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height))
+  const t = getTilt(el)
+  t.rx((0.5 - py) * 4)
+  t.ry((px - 0.5) * 4)
+  el.classList.add('is-tilting')
+  el.style.setProperty('--gx', `${px * 100}%`)
+  el.style.setProperty('--gy', `${py * 100}%`)
+}
+
+function resetTilt(event: PointerEvent) {
+  const el = event.currentTarget as HTMLElement
+  gsap.to(el, {
+    rotationX: 0,
+    rotationY: 0,
+    duration: 0.42,
+    ease: 'power2.out',
+    overwrite: true,
+    onComplete: () => {
+      el.classList.remove('is-tilting')
+      gsap.set(el, { clearProps: 'transform' })
+    },
+  })
+}
+
+async function toggle(p: Project, event: MouseEvent) {
+  const card = (event.currentTarget as HTMLElement).closest('.project') as HTMLElement | null
+  const opening = activeId.value !== p.id
+  activeId.value = opening ? p.id : null
+  if (!opening || !card) return
+
+  await nextTick()
+  const points = card.querySelectorAll(
+    '.project__point, .project__stack-group, .project__stack-label, .chip',
+  )
+  if (points.length) {
+    gsap.fromTo(
+      points,
+      { opacity: 0, y: 8 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.35,
+        stagger: 0.03,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        clearProps: 'transform',
+      },
+    )
+  }
+
+  const video = card.querySelector('.project__cover-video video') as HTMLVideoElement | null
+  if (video) {
+    gsap.fromTo(
+      video,
+      { opacity: 0, scale: 1.03 },
+      { opacity: 1, scale: 1, duration: 0.45, ease: 'power2.out' },
+    )
+  }
 }
 
 /** 数据就绪后确保自动播放（慢网下 autoplay 可能静默失败） */
@@ -53,8 +140,11 @@ function ensurePlay(e: Event) {
           class="card project reveal"
           :class="{ 'is-visible': visible, 'project--active': activeId === project.id }"
           :style="{ transitionDelay: `${pi * 0.12}s` }"
-          @click="toggle(project)"
+          @click="toggle(project, $event)"
+          @pointermove="onTilt"
+          @pointerleave="resetTilt"
         >
+          <span class="project__glare" aria-hidden="true" />
           <!-- 卡片头部：封面 + Logo / 展开后展示视频 -->
           <div class="project__cover" :style="{ '--cover': project.color }">
             <span class="project__cover-index">0{{ pi + 1 }}</span>
@@ -109,7 +199,12 @@ function ensurePlay(e: Event) {
             </button>
 
             <!-- 展开详情 -->
-            <div class="project__detail" :class="{ 'is-open': activeId === project.id }">
+            <div
+              class="project__detail"
+              :class="{ 'is-open': activeId === project.id }"
+              :aria-hidden="activeId !== project.id"
+              :inert="activeId !== project.id"
+            >
               <div class="project__detail-inner">
                 <ul class="project__points">
                   <li v-for="point in project.summary" :key="point" class="project__point">
@@ -144,10 +239,45 @@ function ensurePlay(e: Event) {
 }
 
 .project {
+  position: relative;
   overflow: hidden;
   cursor: pointer;
   display: flex;
   flex-direction: column;
+}
+
+/* 倾斜时关掉 transform 的 CSS transition，避免和 GSAP 抢帧 */
+.project.is-tilting {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  z-index: var(--z-float);
+}
+
+.project__glare {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-popover);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(
+    220px circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(255, 246, 224, 0.3),
+    transparent 62%
+  );
+  mix-blend-mode: soft-light;
+}
+
+.project.is-tilting .project__glare {
+  opacity: 1;
+}
+
+[data-theme='dark'] .project__glare {
+  background: radial-gradient(
+    220px circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(61, 220, 132, 0.16),
+    transparent 62%
+  );
+  mix-blend-mode: screen;
 }
 
 .project--active {
@@ -162,8 +292,8 @@ function ensurePlay(e: Event) {
   background:
     radial-gradient(ellipse 80% 90% at 20% 10%, color-mix(in srgb, var(--cover) 22%, transparent), transparent 60%),
     radial-gradient(ellipse 70% 70% at 85% 90%, color-mix(in srgb, var(--cover) 14%, transparent), transparent 55%),
-    linear-gradient(150deg, var(--bg-3), var(--bg-2));
-  border-bottom: 1px solid var(--line);
+    linear-gradient(150deg, #10293a, #07151f);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   overflow: hidden;
 }
 
@@ -183,9 +313,9 @@ function ensurePlay(e: Event) {
   top: 14px;
   right: 18px;
   font-family: var(--font-mono);
-  font-size: 13px;
-  color: color-mix(in srgb, var(--cover) 75%, var(--ink));
-  z-index: 1;
+  font-size: var(--fs-base);
+  color: color-mix(in srgb, var(--cover) 72%, #ffffff);
+  z-index: var(--z-raised);
 }
 
 .project__cover-mark {
@@ -194,14 +324,14 @@ function ensurePlay(e: Event) {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
+  z-index: var(--z-raised);
 }
 
 /* 展开后的演示视频：撑满封面区 */
 .project__cover-video {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-raised);
   overflow: hidden;
 }
 
@@ -259,7 +389,7 @@ function ensurePlay(e: Event) {
 
 .project__name-en {
   margin-left: 8px;
-  font-size: 13px;
+  font-size: var(--fs-base);
   color: var(--ink-faint);
   font-weight: 500;
 }
@@ -272,22 +402,22 @@ function ensurePlay(e: Event) {
 
 .project__role {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--accent);
   background: var(--accent-soft);
-  border: 1px solid rgba(61, 220, 132, 0.28);
+  border: 1px solid var(--accent-border);
   padding: 2px 9px;
   border-radius: 999px;
 }
 
 .project__period {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--ink-faint);
 }
 
 .project__excerpt {
-  font-size: 14px;
+  font-size: var(--fs-md);
   line-height: 1.6;
   color: var(--ink-dim);
   display: -webkit-box;
@@ -304,10 +434,10 @@ function ensurePlay(e: Event) {
 
 .project__tag {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--amber);
   background: var(--amber-soft);
-  border: 1px solid rgba(255, 180, 84, 0.28);
+  border: 1px solid var(--amber-border);
   padding: 3px 11px;
   border-radius: 999px;
 }
@@ -322,7 +452,7 @@ function ensurePlay(e: Event) {
   border: none;
   color: var(--ink-dim);
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--fs-base);
   padding: 6px 0;
   transition: color 0.2s ease;
 }
@@ -372,7 +502,7 @@ function ensurePlay(e: Event) {
   display: flex;
   gap: 12px;
   align-items: baseline;
-  font-size: 14px;
+  font-size: var(--fs-md);
   line-height: 1.65;
   color: var(--ink-dim);
 }
@@ -397,7 +527,7 @@ function ensurePlay(e: Event) {
 
 .project__stack-label {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--ink-faint);
   letter-spacing: 0.06em;
 }
@@ -410,7 +540,7 @@ function ensurePlay(e: Event) {
 
 .chip {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--ink-dim);
   background: var(--bg-1);
   border: 1px solid var(--line);

@@ -12,13 +12,23 @@ export interface Translation {
   navContact: string
   navOther: string
   navHome: string
+  navStats: string
   switchLang: string
+
+  /** 实时看板页 */
+  statsTitle: string
+  statsSub: string
+  statsHint: string
+  statsLoading: string
+  statsEmptyTitle: string
+  statsEmptyTip: string
 
   /** Hero */
   heroHello: string
   heroViewWork: string
   heroAboutMe: string
   heroCaption: string
+  heroDayCaption: string
   heroScroll: string
   statStacks: string
   statProjects: string
@@ -28,9 +38,6 @@ export interface Translation {
   aboutTitle: string
   aboutSub: string
   aboutAdvantages: string
-  aboutEducation: string
-  eduRankLabel: string
-  eduCoursesLabel: string
 
   /** Skills */
   skillsTitle: string
@@ -71,6 +78,8 @@ export interface Translation {
   konbiniHint: string
   konbiniEnter: string
   back: string
+  sceneLoading: string
+  sceneFail: string
 
   /** Hospital 卡片 */
   hospitalTitle: string
@@ -90,7 +99,56 @@ export interface Translation {
   terrariumDay: string
   terrariumNight: string
 
+  /** 小屋 3D 预览卡 */
+  houseTitle: string
+  houseTitleEn: string
+  houseDesc: string
+  houseStatus: string
+  houseTags: string[]
+  houseDrag: string
+  houseEnter: string
+  houseFail: string
+
+  /** 海边灯塔夜景卡 */
+  lighthouseTitle: string
+  lighthouseTitleEn: string
+  lighthouseDesc: string
+  lighthouseStatus: string
+  lighthouseTags: string[]
+  lighthouseDrag: string
+  lighthouseFail: string
+  lighthouseEnter: string
+  lighthouseBeamOff: string
+  lighthouseBeamOn: string
+  lighthouseLoadingEngine: string
+  lighthouseLoadingScene: string
+  lighthouseLoadingDecoder: string
+  lighthouseLoadingModel: string
+  lighthouseLoadingShader: string
+  lighthouseLoadingReady: string
+  lighthouseRetry: string
+
   footerBuilt: string
+
+  /** 无障碍 / 结构化标签 */
+  ariaMainNav: string
+  ariaMenuToggle: string
+  skipToContent: string
+  railJump: string
+  ariaSectionNav: string
+  themeToDark: string
+  themeToLight: string
+
+  /** 看板加载失败 */
+  statsFailTitle: string
+  statsFailTip: string
+  statsRetry: string
+
+  /** 页脚法务说明 */
+  legalPrivacy: string
+  legalTerms: string
+  legalPrivacyText: string
+  legalTermsText: string
 }
 
 const zh: Translation = {
@@ -100,23 +158,30 @@ const zh: Translation = {
   navContact: '联系',
   navOther: '其他',
   navHome: '回到首页',
+  navStats: '看板',
   switchLang: '切换语言',
+
+  statsTitle: 'Token 消耗看板',
+  statsSub:
+    '实时统计 AI 编程助手在本机的 token 消耗：请求级用量、缓存命中率、模型分布与预估成本，数据由本机采集端秒级推送。',
+  statsHint: '数据来自本机采集端 · 秒级刷新',
+  statsLoading: '正在连接看板…',
+  statsEmptyTitle: '看板尚未上线',
+  statsEmptyTip: '实时数据还在接通，稍后再来看看。',
 
   heroHello: '你好，我是',
   heroViewWork: '查看作品',
   heroAboutMe: '关于我',
   heroCaption: '// 代码之外，也有星空',
+  heroDayCaption: '// 设计、代码与交付',
   heroScroll: 'scroll',
   statStacks: '技术栈',
   statProjects: '个人项目',
   statDirections: '技术方向',
 
   aboutTitle: '关于我',
-  aboutSub: '一名正在成长的全栈开发者，后端方向为主，兼具前端与大数据分析能力。',
-  aboutAdvantages: '个人优势',
-  aboutEducation: '教育经历',
-  eduRankLabel: '专业排名',
-  eduCoursesLabel: '主修课程',
+  aboutSub: '独立产品工程师，负责从需求拆解、界面设计到上线交付的完整链路；已交付 6 个 Web 与移动端项目，覆盖医疗、教务、点餐与推荐系统。',
+  aboutAdvantages: '工作方式',
 
   skillsTitle: '技术栈',
   skillsSub: '从后端服务到前端界面，再到数据处理，覆盖完整交付链路。',
@@ -139,7 +204,7 @@ const zh: Translation = {
   contactLocation: '坐标',
   contactStatus: '状态',
   contactLocationValue: '广东 · 广州',
-  contactStatusValue: '在线 · 乐于交流',
+  contactStatusValue: '开放远程协作 · 邮件优先',
   contactCopied: '已复制',
   contactCopy: '复制',
 
@@ -154,6 +219,8 @@ const zh: Translation = {
   konbiniHint: '当前为占位预览 · 3D 模型制作中',
   konbiniEnter: '点击进入 3D 场景',
   back: '返回',
+  sceneLoading: '正在准备 3D 场景…',
+  sceneFail: '3D 场景加载失败，请返回上一页重试',
 
   hospitalTitle: '现代综合医院',
   hospitalTitleEn: 'General Hospital',
@@ -173,7 +240,52 @@ const zh: Translation = {
   terrariumDay: '白昼',
   terrariumNight: '夜晚',
 
+  houseTitle: '小屋 3D 实例',
+  houseTitleEn: 'Cozy House',
+  houseDesc:
+    '首屏同款小屋模型的实时 3D 预览：与首屏共用同一套加载与光照，跟随页面日夜切换，夜里窗户与门廊灯会亮起。',
+  houseStatus: '实时渲染',
+  houseTags: ['Three.js', 'KTX2', '昼夜灯光'],
+  houseDrag: '拖拽旋转',
+  houseEnter: '点击进入 3D 场景',
+  houseFail: '3D 预览不可用',
+
+  lighthouseTitle: '海边灯塔夜景',
+  lighthouseTitleEn: 'Seaside Lighthouse',
+  lighthouseDesc:
+    '深夜海岸的实时 3D 场景：海面完全由着色器生成，三组不同方向与波长的正弦波叠加高频噪声，近岸碎浪与泡沫随浪滚动；灯塔光束以聚光灯加锥形加法外壳模拟体积光，每 8 秒扫过一圈，扫到镜头时有轻微耀斑。拖拽旋转、横向滑动，可绕灯塔自由观察。',
+  lighthouseStatus: '实时渲染',
+  lighthouseTags: ['Three.js', 'GLSL 海面', '体积光柱', '60 FPS'],
+  lighthouseDrag: '拖拽旋转',
+  lighthouseFail: '3D 预览不可用',
+  lighthouseEnter: '点击进入灯塔 3D 场景',
+  lighthouseBeamOff: '关闭光束',
+  lighthouseBeamOn: '开启光束',
+  lighthouseLoadingEngine: '正在加载 3D 引擎',
+  lighthouseLoadingScene: '正在准备海面着色器',
+  lighthouseLoadingDecoder: '正在准备纹理解码器',
+  lighthouseLoadingModel: '正在加载灯塔模型',
+  lighthouseLoadingShader: '正在编译着色器',
+  lighthouseLoadingReady: '即将呈现',
+  lighthouseRetry: '重试',
+
   footerBuilt: 'Built with Vue 3 + Vite',
+  ariaMainNav: '主导航',
+  ariaMenuToggle: '切换菜单',
+  skipToContent: '跳到正文',
+  railJump: '跳转到',
+  ariaSectionNav: '章节导航',
+  themeToDark: '切换到黑夜模式',
+  themeToLight: '切换到日光模式',
+  statsFailTitle: '看板加载失败',
+  statsFailTip: '网络或嵌入设置异常，可稍后重试。',
+  statsRetry: '重新加载',
+  legalPrivacy: '隐私政策',
+  legalTerms: '使用条款',
+  legalPrivacyText:
+    '本站仅记录必要的访问统计，不使用 Cookie 追踪个人身份；第三方嵌入内容（如 Token 看板）遵循其各自的数据政策。',
+  legalTermsText:
+    '本站内容为个人作品与学习记录，欢迎引用并注明来源；未经许可请勿用于商业用途。',
 }
 
 const en: Translation = {
@@ -183,23 +295,30 @@ const en: Translation = {
   navContact: 'Contact',
   navOther: 'Other',
   navHome: 'Back to home',
+  navStats: 'Dashboard',
   switchLang: 'Switch language',
+
+  statsTitle: 'Token Usage Dashboard',
+  statsSub:
+    'Live token usage of an AI coding assistant on this machine — request-level usage, cache hit rate, model split and estimated cost, pushed from the local collector in near real time.',
+  statsHint: 'Data from the local collector · live',
+  statsLoading: 'Connecting to dashboard…',
+  statsEmptyTitle: 'Dashboard coming soon',
+  statsEmptyTip: 'Live data is still being hooked up. Check back later.',
 
   heroHello: "Hi, I'm",
   heroViewWork: 'View Work',
   heroAboutMe: 'About Me',
   heroCaption: '// Beyond code, there are stars',
+  heroDayCaption: '// Design, code, and shipping',
   heroScroll: 'scroll',
   statStacks: 'Tech Stack',
   statProjects: 'Projects',
   statDirections: 'Tracks',
 
   aboutTitle: 'About Me',
-  aboutSub: 'A growing full-stack developer with a backend focus, plus frontend and big-data analysis skills.',
-  aboutAdvantages: 'Strengths',
-  aboutEducation: 'Education',
-  eduRankLabel: 'Major Rank',
-  eduCoursesLabel: 'Core Courses',
+  aboutSub: 'Independent product engineer owning the full path from problem framing and UI design to shipping. Six web and mobile products delivered across healthcare, campus services, ordering, and recommendation systems.',
+  aboutAdvantages: 'How I Work',
 
   skillsTitle: 'Tech Stack',
   skillsSub: 'From backend services to frontend UI and data processing — the full delivery chain.',
@@ -222,7 +341,7 @@ const en: Translation = {
   contactLocation: 'Location',
   contactStatus: 'Status',
   contactLocationValue: 'Guangzhou, Guangdong',
-  contactStatusValue: 'Online · Open to chat',
+  contactStatusValue: 'Open to remote work · email preferred',
   contactCopied: 'Copied',
   contactCopy: 'Copy',
 
@@ -237,6 +356,8 @@ const en: Translation = {
   konbiniHint: 'Placeholder preview · 3D model in progress',
   konbiniEnter: 'Enter the 3D scene',
   back: 'Back',
+  sceneLoading: 'Preparing the 3D scene…',
+  sceneFail: 'The 3D scene failed to load. Go back and try again.',
 
   hospitalTitle: 'General Hospital',
   hospitalTitleEn: '综合医院',
@@ -256,31 +377,67 @@ const en: Translation = {
   terrariumDay: 'Day',
   terrariumNight: 'Night',
 
+  houseTitle: 'Cozy House',
+  houseTitleEn: '小屋 3D 实例',
+  houseDesc:
+    'A live 3D preview of the same house model used in the hero, sharing one loader and lighting rig. It follows the site theme — windows and the porch lamp light up at night.',
+  houseStatus: 'Live render',
+  houseTags: ['Three.js', 'KTX2', 'Day–Night'],
+  houseDrag: 'Drag to rotate',
+  houseEnter: 'Enter the 3D scene',
+  houseFail: '3D preview unavailable',
+
+  lighthouseTitle: 'Seaside Lighthouse',
+  lighthouseTitleEn: '海边灯塔夜景',
+  lighthouseDesc:
+    'A live 3D night scene on the coast: the ocean is generated entirely in a shader — three sine waves with different directions and wavelengths plus high-frequency noise, with breaking chop and scrolling foam near the shore. The lighthouse beam is a spotlight plus an additive cone shell standing in for volumetric light, sweeping once every 8 seconds with a subtle lens flare when it crosses the camera.',
+  lighthouseStatus: 'Live render',
+  lighthouseTags: ['Three.js', 'GLSL Ocean', 'Volumetric Beam', '60 FPS'],
+  lighthouseDrag: 'Drag to rotate',
+  lighthouseFail: '3D preview unavailable',
+  lighthouseEnter: 'Enter the lighthouse 3D scene',
+  lighthouseBeamOff: 'Turn beam off',
+  lighthouseBeamOn: 'Turn beam on',
+  lighthouseLoadingEngine: 'Loading the 3D engine',
+  lighthouseLoadingScene: 'Preparing the ocean shader',
+  lighthouseLoadingDecoder: 'Preparing the texture decoder',
+  lighthouseLoadingModel: 'Loading the lighthouse model',
+  lighthouseLoadingShader: 'Compiling shaders',
+  lighthouseLoadingReady: 'Almost ready',
+  lighthouseRetry: 'Retry',
+
   footerBuilt: 'Built with Vue 3 + Vite',
+  ariaMainNav: 'Main navigation',
+  ariaMenuToggle: 'Toggle menu',
+  skipToContent: 'Skip to content',
+  railJump: 'Jump to',
+  ariaSectionNav: 'Section navigation',
+  themeToDark: 'Switch to night mode',
+  themeToLight: 'Switch to day mode',
+  statsFailTitle: 'Dashboard failed to load',
+  statsFailTip: 'The network or embed settings may be off. Please try again later.',
+  statsRetry: 'Reload',
+  legalPrivacy: 'Privacy',
+  legalTerms: 'Terms',
+  legalPrivacyText:
+    'This site only keeps essential visit statistics and does not use cookies to track individuals. Embedded third-party content (such as the token dashboard) follows its own data policy.',
+  legalTermsText:
+    'Content here is personal work and study documentation. Quoting with attribution is welcome; commercial use requires permission.',
 }
 
-/** 英文内容数据（education / advantages / skills / projects 的英译） */
+/** 英文内容数据（advantages / skills / projects 的英译） */
 export const enContent = {
-  role: 'Full-Stack Developer',
-  slogan: 'Turning ideas into products with code',
+  role: 'Product Engineer',
+  slogan: 'Designing and shipping products that hold up in use',
   intro:
-    'Full-stack development and big-data analysis skills — mining value from data, creating with AI, and enjoying the process of turning ideas into usable products.',
+    'Independent product engineer owning the full path from problem framing to shipped product. Six web and mobile products delivered across healthcare, campus services, ordering, and recommendation systems.',
   advantages: [
-    'Independent 0-to-1 full-stack delivery — from DB design and backend APIs to frontend UI, shipping complete production-ready products single-handedly.',
-    'Skilled in AI-assisted development with Copilot, DeepSeek, and Codex, multiplying coding, debugging, and documentation efficiency.',
-    'Hands-on dual-backend experience — complete projects with both Spring Boot and FastAPI, including RESTful API design, auth & authorization, and SQL tuning.',
-    'Vue 3 reactive frontend with Composition API + TypeScript, covering Web and Uni-app multi-platform adaptation.',
-    'Data-driven decisions — data cleaning and modeling with Pandas / NumPy, visualized with ECharts.',
-    'Familiar with containerized deployment — Docker packaging and GitHub Pages static hosting, handling launch and iteration independently.',
+    'End-to-end ownership: framing the problem, shaping the experience, and shipping the product.',
+    'Design engineering: interface, interaction, and code treated as one system—not separate handoffs.',
+    'AI-assisted workflow: models help with research, prototyping, and code drafts, shortening the path from idea to a runnable prototype.',
+    'Taste under constraint: hierarchy, rhythm, and motion in service of clarity and longevity.',
+    'Outcome-driven: small releases, real feedback, and continuous iteration over feature volume.',
   ],
-  education: {
-    school: 'Guangzhou Software College',
-    degree: 'Bachelor',
-    major: 'Data Science & Big Data Technology',
-    period: '2023-2027',
-    rank: 'TOP 10%',
-    courses: ['Data Structures', 'Linux OS', 'Data Visualization', 'Data Warehousing & Mining', 'Algorithm Analysis & Design'],
-  },
   skills: [
     {
       group: 'Backend',
@@ -315,7 +472,7 @@ export const enContent = {
         { group: 'Frontend', items: ['Vue 3 (Composition API)', 'TypeScript', 'Pinia', 'Element Plus', 'ECharts', 'Vite'] },
         { group: 'Tools', items: ['Git', 'RESTful API'] },
       ],
-      color: '#38d9c9',
+      color: '#4fbfb5',
       logo: 'https://aka.doubaocdn.com/s/MUdRjMVOC0',
       video: './videos/ehr-demo.mp4',
     },
@@ -335,7 +492,7 @@ export const enContent = {
         { group: 'Frontend', items: ['Vue 3 (Composition API)', 'TypeScript', 'Element Plus', 'SCSS', 'Vite'] },
         { group: 'Collab & Test', items: ['Git', 'Postman'] },
       ],
-      color: '#3ddc84',
+      color: '#59bf8c',
       logo: 'https://aka.doubaocdn.com/s/yz7Oa4DMBL',
       video: './videos/smartread-demo.mp4',
     },
@@ -355,7 +512,7 @@ export const enContent = {
         { group: 'Frontend', items: ['Vue 3', 'Vite', 'Pinia', 'Element Plus', 'Axios', 'Sass'] },
         { group: 'Tools', items: ['Maven', 'Git', 'RESTful API'] },
       ],
-      color: '#56c8ff',
+      color: '#5fa8c8',
       logo: 'https://aka.doubaocdn.com/s/SpZhnBu9Vl',
       video: './videos/canteen-demo.mp4',
     },
@@ -373,7 +530,7 @@ export const enContent = {
         { group: 'Desktop', items: ['Neutralino', 'WebView2'] },
         { group: 'Testing', items: ['Playwright (dev)'] },
       ],
-      color: '#8be04f',
+      color: '#8fbe6f',
       logo: 'https://aka.doubaocdn.com/s/rGgfVovKT0',
       video: './videos/happywoo-demo.mp4',
     },
@@ -394,7 +551,7 @@ export const enContent = {
         { group: 'Frontend', items: ['Vue 3 (Composition API)', 'TypeScript', 'Uni-app', 'SCSS', 'Vite'] },
         { group: 'Tools', items: ['Git', 'Swagger', 'Postman'] },
       ],
-      color: '#ffb454',
+      color: '#d9a05f',
       logo: 'https://aka.doubaocdn.com/s/Kl8pVQGL8i',
     },
     {
@@ -413,7 +570,7 @@ export const enContent = {
         { group: 'UI Library', items: ['uView UI', 'Uni-ui'] },
         { group: 'Tools', items: ['HBuilderX', 'Git', 'Axios'] },
       ],
-      color: '#c792ea',
+      color: '#a98cc4',
       logo: 'https://aka.doubaocdn.com/s/JF26gix0BC',
     },
   ] as Project[],

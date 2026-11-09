@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useResume } from '../data/resume'
 
-const { locale, education } = useResume()
+const { locale } = useResume()
 
 type LineType = 'cmd' | 'out' | 'dim' | 'ok' | 'blank'
 
@@ -22,24 +22,23 @@ let runId = 0
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-/** 终端会话脚本：教育经历以命令行形式输出 */
+/** 终端会话脚本：用工作方式代替学校/工具清单 */
 const script = computed<TermLine[]>(() => {
-  const edu = education.value
   const isZh = locale.value === 'zh'
 
   return [
     { type: 'cmd', text: 'whoami' },
-    { type: 'out', text: `${isZh ? edu.school : 'Yi Lee'}` },
-    { type: 'dim', text: `${edu.degree} · ${edu.major} · ${edu.period}` },
+    { type: 'out', text: isZh ? '独立产品工程师' : 'independent product engineer' },
+    { type: 'dim', text: isZh ? '医疗 / 教务 / 推荐系统 · 全栈交付' : 'healthcare / campus / recommendation systems · end-to-end delivery' },
     { type: 'blank', text: '' },
-    { type: 'cmd', text: 'cat /edu/rank' },
-    { type: 'ok', text: isZh ? `专业排名 ${edu.rank}` : `Major rank ${edu.rank}` },
+    { type: 'cmd', text: 'focus' },
+    { type: 'out', text: isZh ? '把复杂问题变成清晰、可用的系统' : 'turning complex problems into clear, usable systems' },
     { type: 'blank', text: '' },
-    { type: 'cmd', text: 'ls /edu/courses' },
-    { type: 'dim', text: edu.courses.join('   ') },
+    { type: 'cmd', text: 'now' },
+    { type: 'ok', text: isZh ? '打磨小而精确的产品' : 'building small, precise products' },
     { type: 'blank', text: '' },
-    { type: 'cmd', text: './me --status' },
-    { type: 'ok', text: isZh ? '● 在线 · 正在造点新东西' : '● Online · Building something new' },
+    { type: 'cmd', text: 'status' },
+    { type: 'ok', text: isZh ? '● 开放少量合作' : '● open to selected collaborations' },
   ]
 })
 
@@ -114,7 +113,7 @@ watch(locale, () => {
         <i class="term__dot term__dot--y" />
         <i class="term__dot term__dot--g" />
       </span>
-      <span class="term__path">guest@dev: ~/edu</span>
+      <span class="term__path">guest@studio: ~/practice</span>
       <span class="term__size">zsh · 80×24</span>
     </header>
 
@@ -147,13 +146,14 @@ watch(locale, () => {
 </template>
 
 <style scoped>
+/* 终端在两种主题下都保持深色，作为页面里的"代码窗口"锚点 */
 .term {
-  border: 1px solid var(--line);
+  border: 1px solid var(--term-line);
   border-radius: var(--radius);
-  background: linear-gradient(180deg, #0b1016, #080c11);
+  background: linear-gradient(180deg, var(--term-bg-a), var(--term-bg-b));
   overflow: hidden;
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), var(--shadow-card);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 16px 40px rgba(0, 0, 0, 0.28);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   height: 100%;
   display: flex;
@@ -161,8 +161,8 @@ watch(locale, () => {
 }
 
 .term:hover {
-  border-color: var(--line-bright);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 16px 40px rgba(0, 0, 0, 0.45);
+  border-color: var(--term-line-bright);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 46px rgba(0, 0, 0, 0.38);
 }
 
 /* 标题栏 */
@@ -172,7 +172,7 @@ watch(locale, () => {
   gap: 12px;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.025);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--term-line);
   flex-shrink: 0;
 }
 
@@ -200,15 +200,15 @@ watch(locale, () => {
 
 .term__path {
   font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: var(--ink-faint);
+  font-size: var(--fs-xs);
+  color: var(--term-faint);
 }
 
 .term__size {
   margin-left: auto;
   font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-faint);
+  font-size: var(--fs-xs);
+  color: var(--term-faint);
   opacity: 0.7;
 }
 
@@ -216,7 +216,7 @@ watch(locale, () => {
 .term__body {
   padding: 18px 18px 22px;
   font-family: var(--font-mono);
-  font-size: 12.8px;
+  font-size: var(--fs-base);
   line-height: 1.85;
   flex: 1;
   overflow: hidden;
@@ -240,32 +240,32 @@ watch(locale, () => {
 }
 
 .term__line--cmd {
-  color: var(--ink);
+  color: var(--term-ink);
   display: flex;
   align-items: baseline;
   gap: 8px;
 }
 
 .term__prompt {
-  color: var(--accent);
+  color: var(--term-accent);
   flex-shrink: 0;
   font-weight: 700;
 }
 
 .term__line--out {
-  color: var(--ink);
+  color: var(--term-ink);
   padding-left: 16px;
   font-weight: 600;
 }
 
 .term__line--dim {
-  color: var(--ink-faint);
+  color: var(--term-faint);
   padding-left: 16px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
 }
 
 .term__line--ok {
-  color: var(--accent);
+  color: var(--term-accent);
   padding-left: 16px;
 }
 
@@ -279,11 +279,11 @@ watch(locale, () => {
   display: inline-block;
   width: 7px;
   height: 14px;
-  background: var(--accent);
+  background: var(--term-accent);
   margin-left: 2px;
   vertical-align: -2px;
   animation: caret 1s steps(1) infinite;
-  box-shadow: 0 0 10px rgba(61, 220, 132, 0.5);
+  box-shadow: 0 0 10px var(--term-glow);
 }
 
 .term__caret--idle {
@@ -300,6 +300,6 @@ watch(locale, () => {
 
 /* 完成态：整体轻微提亮 */
 .term.is-done {
-  border-color: rgba(61, 220, 132, 0.22);
+  border-color: color-mix(in srgb, var(--term-accent) 26%, transparent);
 }
 </style>

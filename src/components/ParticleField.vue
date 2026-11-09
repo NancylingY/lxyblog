@@ -24,9 +24,16 @@ let h = 0
 const dpr = Math.min(window.devicePixelRatio || 1, 2)
 const mouse = { x: -9999, y: -9999 }
 let reducedMotion = false
+let inView = true
+let active = false
+let observer: IntersectionObserver | null = null
+let ro: ResizeObserver | null = null
 
 const LINK_DIST = 130
+const LINK_DIST2 = LINK_DIST * LINK_DIST
 const COUNT = 72
+let lastW = -1
+let lastH = -1
 
 function resize() {
   const canvas = canvasRef.value
@@ -35,6 +42,10 @@ function resize() {
   if (!rect) return
   w = rect.width
   h = rect.height
+  // 隐藏/显示切换时尺寸未变就不重建粒子，避免主题切换那一帧重新分配数组
+  if (w === lastW && h === lastH) return
+  lastW = w
+  lastH = h
   canvas.width = w * dpr
   canvas.height = h * dpr
   canvas.style.width = `${w}px`
@@ -42,10 +53,14 @@ function resize() {
   ctx = canvas.getContext('2d')
   ctx?.setTransform(dpr, 0, 0, dpr, 0, 0)
   spawn()
+  // 减少动效模式下没有循环，尺寸变化后需要补画一次静态帧
+  if (reducedMotion) step()
 }
 
 function spawn() {
-  particles = Array.from({ length: COUNT }, () => ({
+  // 小画布/弱设备减少粒子数量，连线与绘制开销随之下降
+  const count = w < 300 ? 38 : w < 400 ? 52 : COUNT
+  particles = Array.from({ length: count }, () => ({
     x: Math.random() * w,
     y: Math.random() * h,
     vx: (Math.random() - 0.5) * 0.45,
@@ -80,39 +95,63 @@ function step() {
     if (p.y > h + 20) p.y = -20
   }
 
-  // 连线
+  // 连线：先用坐标差排除远点，再比较平方距离，省去大量开方
   for (let i = 0; i < particles.length; i++) {
+    const a = particles[i]
     for (let j = i + 1; j < particles.length; j++) {
-      const a = particles[i]
       const b = particles[j]
-      const d = Math.hypot(a.x - b.x, a.y - b.y)
-      if (d < LINK_DIST) {
-        const alpha = (1 - d / LINK_DIST) * 0.28
-        ctx.strokeStyle = `hsla(${(a.hue + b.hue) / 2}, 80%, 62%, ${alpha})`
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.moveTo(a.x, a.y)
-        ctx.lineTo(b.x, b.y)
-        ctx.stroke()
-      }
+      const dx = a.x - b.x
+      if (dx > LINK_DIST || dx < -LINK_DIST) continue
+      const dy = a.y - b.y
+      if (dy > LINK_DIST || dy < -LINK_DIST) continue
+      const d2 = dx * dx + dy * dy
+      if (d2 > LINK_DIST2) continue
+      const d = Math.sqrt(d2)
+      const alpha = (1 - d / LINK_DIST) * 0.28
+      ctx.strokeStyle = `hsla(${(a.hue + b.hue) / 2}, 80%, 62%, ${alpha})`
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(a.x, a.y)
+      ctx.lineTo(b.x, b.y)
+      ctx.stroke()
     }
   }
 
-  // 粒子
+  // 粒子：两层半透明圆模拟辉光，替代每帧 shadowBlur（软件模糊在移动端极耗）
   for (const p of particles) {
     ctx.beginPath()
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-    ctx.fillStyle = `hsla(${p.hue}, 90%, 70%, 0.9)`
-    ctx.shadowColor = `hsla(${p.hue}, 90%, 60%, 0.8)`
-    ctx.shadowBlur = 8
+    ctx.arc(p.x, p.y, p.r * 2.6, 0, Math.PI * 2)
+    ctx.fillStyle = `hsla(${p.hue}, 90%, 62%, 0.16)`
     ctx.fill()
-    ctx.shadowBlur = 0
+
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+    ctx.fillStyle = `hsla(${p.hue}, 95%, 74%, 0.95)`
+    ctx.fill()
   }
 }
 
 function loop() {
+  if (!active) return
   step()
   raf = requestAnimationFrame(loop)
+}
+
+function start() {
+  if (active || reducedMotion || !inView || document.hidden) return
+  active = true
+  raf = requestAnimationFrame(loop)
+}
+
+function stop() {
+  active = false
+  cancelAnimationFrame(raf)
+  raf = 0
+}
+
+function onVisibilityChange() {
+  if (document.hidden) stop()
+  else start()
 }
 
 function onMouseMove(e: MouseEvent) {
@@ -135,18 +174,35 @@ onMounted(() => {
 
   resize()
   window.addEventListener('resize', resize)
+  ro = new ResizeObserver(resize)
+  ro.observe(canvas.parentElement ?? canvas)
   canvas.addEventListener('mousemove', onMouseMove)
   canvas.addEventListener('mouseleave', onMouseLeave)
+  document.addEventListener('visibilitychange', onVisibilityChange)
 
   if (reducedMotion) {
     step()
-  } else {
-    loop()
+    return
   }
+
+  // 离开首屏或切到后台时停掉 rAF，避免空转耗电
+  observer = new IntersectionObserver(
+    (entries) => {
+      inView = entries[0]?.isIntersecting ?? true
+      if (inView) start()
+      else stop()
+    },
+    { threshold: 0 },
+  )
+  observer.observe(canvas.parentElement ?? canvas)
+  start()
 })
 
 onBeforeUnmount(() => {
-  cancelAnimationFrame(raf)
+  stop()
+  observer?.disconnect()
+  ro?.disconnect()
+  document.removeEventListener('visibilitychange', onVisibilityChange)
   window.removeEventListener('resize', resize)
   canvasRef.value?.removeEventListener('mousemove', onMouseMove)
   canvasRef.value?.removeEventListener('mouseleave', onMouseLeave)
@@ -184,13 +240,13 @@ onBeforeUnmount(() => {
 .particle-field__canvas {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-raised);
 }
 
 .particle-field__glow {
   position: absolute;
   inset: -30%;
-  z-index: 0;
+  z-index: var(--z-base);
   background: radial-gradient(circle at 50% 50%, rgba(61, 220, 132, 0.16), transparent 55%);
   animation: breathe 6s ease-in-out infinite;
   pointer-events: none;
@@ -211,7 +267,7 @@ onBeforeUnmount(() => {
 .particle-field__core {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: var(--z-float);
   display: flex;
   align-items: center;
   justify-content: center;

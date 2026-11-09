@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useResume } from '../data/resume'
+import { useTheme } from '../composables/useTheme'
 import CreativeTerminal from './CreativeTerminal.vue'
+import AboutFocusCard from './AboutFocusCard.vue'
 
 const { t, advantages } = useResume()
+const { isDark } = useTheme()
 
 const el = ref<HTMLElement | null>(null)
 const visible = ref(false)
@@ -50,9 +53,10 @@ onBeforeUnmount(() => observer?.disconnect())
           </ul>
         </div>
 
-        <!-- 创意组件：终端会话（点击可直接跳过打字） -->
+        <!-- 右侧：日光模式用工作室笔记卡，黑夜模式用终端会话 -->
         <div class="about__term reveal" :class="{ 'is-visible': visible }" style="transition-delay: 0.1s">
-          <CreativeTerminal />
+          <AboutFocusCard v-if="!isDark" />
+          <CreativeTerminal v-else />
         </div>
       </div>
     </div>
@@ -96,7 +100,7 @@ onBeforeUnmount(() => observer?.disconnect())
   gap: 12px;
   align-items: baseline;
   color: var(--ink-dim);
-  font-size: 15px;
+  font-size: var(--fs-lg);
   line-height: 1.6;
 }
 

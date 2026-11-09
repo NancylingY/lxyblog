@@ -462,8 +462,8 @@ export function glassStreakMaterial() {
         // 列的软边
         float xw = smoothstep(0.5, 0.10, abs(cx - 0.5));
 
-        // 只有一部分列在下雨
-        float active = step(0.42, seed);
+        // 只有一部分列在下雨（active 是 GLSL ES 3.00 保留字，改用 isActive）
+        float isActive = step(0.42, seed);
 
         float speed = 0.55 + seed * 1.15;
         float offset = hash(col * 7.11);
@@ -476,7 +476,7 @@ export function glassStreakMaterial() {
         float trail = smoothstep(len, 0.0, dy) * step(0.0, dy);
         float head = smoothstep(0.013, 0.0, abs(dy));
 
-        float a = (trail * 0.42 + head * 0.85) * xw * active * uOpacity;
+        float a = (trail * 0.42 + head * 0.85) * xw * isActive * uOpacity;
         if (a < 0.004) discard;
 
         vec3 col3 = mix(vec3(0.62, 0.82, 1.0), vec3(1.0, 0.90, 0.74), seed * 0.6);

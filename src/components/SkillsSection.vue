@@ -52,7 +52,12 @@ onBeforeUnmount(() => observer?.disconnect())
           </header>
 
           <ul class="skills__list">
-            <li v-for="item in group.items" :key="item" class="skills__item">
+            <li
+              v-for="(item, ii) in group.items"
+              :key="item"
+              class="skills__item"
+              :style="{ '--i': ii }"
+            >
               <span class="skills__dash">›</span>
               {{ item }}
             </li>
@@ -91,7 +96,7 @@ onBeforeUnmount(() => observer?.disconnect())
   justify-content: center;
   border-radius: 10px;
   background: var(--accent-soft);
-  border: 1px solid rgba(61, 220, 132, 0.3);
+  border: 1px solid var(--accent-border);
   color: var(--accent);
 }
 
@@ -108,7 +113,7 @@ onBeforeUnmount(() => observer?.disconnect())
 .skills__seq {
   margin-left: auto;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--fs-base);
   color: var(--ink-faint);
 }
 
@@ -124,9 +129,26 @@ onBeforeUnmount(() => observer?.disconnect())
   align-items: baseline;
   gap: 10px;
   font-family: var(--font-mono);
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   color: var(--ink-dim);
+  opacity: 0;
   transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.skills__card.is-visible .skills__item {
+  animation: skill-in 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 45ms + 60ms);
+}
+
+@keyframes skill-in {
+  from {
+    opacity: 0;
+    translate: -7px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
 }
 
 .skills__item:hover {
@@ -137,6 +159,13 @@ onBeforeUnmount(() => observer?.disconnect())
 .skills__dash {
   color: var(--amber);
   flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skills__item {
+    opacity: 1;
+    animation: none;
+  }
 }
 
 @media (max-width: 900px) {

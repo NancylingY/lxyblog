@@ -10,8 +10,12 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+dist.tgz
+*.tgz
 *.local
 .workbuddy
+models-archive/
+screenshots/
 
 # Editor directories and files
 .vscode/*

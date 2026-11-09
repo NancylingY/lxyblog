@@ -2,6 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useResume } from '../data/resume'
+import HousePreviewCard from '../components/HousePreviewCard.vue'
+import LighthouseCard from '../components/LighthouseCard.vue'
 
 const { t } = useResume()
 const router = useRouter()
@@ -17,7 +19,16 @@ const sceneStyle = computed(() => ({
   '--ry': `${ry.value}deg`,
 }))
 
-function onMove(e: MouseEvent) {
+/** 视差只在精确指针 + 允许动效时启用，触屏与 reduced-motion 下保持静态 */
+function canTilt() {
+  return (
+    window.matchMedia('(pointer: fine)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+function onMove(e: PointerEvent) {
+  if (!canTilt()) return
   const el = e.currentTarget as HTMLElement
   const r = el.getBoundingClientRect()
   const px = (e.clientX - r.left) / r.width - 0.5
@@ -45,7 +56,8 @@ const hosStyle = computed(() => ({
   '--hry': `${hry.value}deg`,
 }))
 
-function onHosMove(e: MouseEvent) {
+function onHosMove(e: PointerEvent) {
+  if (!canTilt()) return
   const el = e.currentTarget as HTMLElement
   const r = el.getBoundingClientRect()
   const px = (e.clientX - r.left) / r.width - 0.5
@@ -72,7 +84,8 @@ const terrStyle = computed(() => ({
   '--try': `${terRy.value}deg`,
 }))
 
-function onTerMove(e: MouseEvent) {
+function onTerMove(e: PointerEvent) {
+  if (!canTilt()) return
   const el = e.currentTarget as HTMLElement
   const r = el.getBoundingClientRect()
   const px = (e.clientX - r.left) / r.width - 0.5
@@ -90,15 +103,56 @@ function enterTerrarium() {
   router.push('/terrarium')
 }
 
+/* 小屋卡片：整卡进入详情页；拖拽旋转结束后不误触进入 */
+let housePress: { x: number; y: number } | null = null
+
+function onHouseDown(e: PointerEvent) {
+  housePress = { x: e.clientX, y: e.clientY }
+}
+
+function enterHouse() {
+  router.push('/house')
+}
+
+function onHouseClick(e: MouseEvent) {
+  if (housePress) {
+    const moved = Math.hypot(e.clientX - housePress.x, e.clientY - housePress.y)
+    housePress = null
+    // 有位移说明是拖拽旋转，不当作点击
+    if (moved > 8) return
+  }
+  enterHouse()
+}
+
+/* 灯塔卡片：同样整卡进入全屏场景，拖拽旋转后不误触 */
+let seaPress: { x: number; y: number } | null = null
+
+function onSeaDown(e: PointerEvent) {
+  seaPress = { x: e.clientX, y: e.clientY }
+}
+
+function enterLighthouse() {
+  router.push('/lighthouse')
+}
+
+function onSeaClick(e: MouseEvent) {
+  if (seaPress) {
+    const moved = Math.hypot(e.clientX - seaPress.x, e.clientY - seaPress.y)
+    seaPress = null
+    if (moved > 8) return
+  }
+  enterLighthouse()
+}
+
 onMounted(() => {
   requestAnimationFrame(() => (mounted.value = true))
 })
 </script>
 
 <template>
-  <section class="section other" :class="{ 'is-ready': mounted }">
+  <section class="section other">
     <div class="container">
-      <div class="section-head">
+      <div class="section-head reveal" :class="{ 'is-visible': mounted }">
         <span class="section-label">~/other</span>
         <h2 class="section-title">{{ t.otherTitle }}</h2>
         <p class="section-sub">{{ t.otherSub }}</p>
@@ -107,7 +161,8 @@ onMounted(() => {
       <div class="other__grid">
       <!-- 日式便利店 · 3D 卡片 -->
       <article
-        class="card konbini"
+        class="card konbini reveal"
+        :class="{ 'is-visible': mounted }"
         role="link"
         tabindex="0"
         :aria-label="t.konbiniEnter"
@@ -117,8 +172,8 @@ onMounted(() => {
       >
         <div
           class="konbini__stage"
-          @mousemove="onMove"
-          @mouseleave="onLeave"
+          @pointermove="onMove"
+          @pointerleave="onLeave"
         >
           <span class="konbini__badge">
             <i class="konbini__badge-dot" />
@@ -193,7 +248,8 @@ onMounted(() => {
 
       <!-- 现代综合医院 · 3D 卡片 -->
       <article
-        class="card konbini konbini--hos"
+        class="card konbini konbini--hos reveal"
+        :class="{ 'is-visible': mounted }"
         role="link"
         tabindex="0"
         :aria-label="t.hospitalEnter"
@@ -201,7 +257,7 @@ onMounted(() => {
         @keydown.enter="enterHospital"
         @keydown.space.prevent="enterHospital"
       >
-        <div class="konbini__stage konbini__stage--day" @mousemove="onHosMove" @mouseleave="onHosLeave">
+        <div class="konbini__stage konbini__stage--day" @pointermove="onHosMove" @pointerleave="onHosLeave">
           <span class="konbini__badge konbini__badge--day">
             <i class="konbini__badge-dot konbini__badge-dot--day" />
             {{ t.hospitalStatus }}
@@ -257,7 +313,8 @@ onMounted(() => {
 
       <!-- 微光之境 · 3D 生态卡片 -->
       <article
-        class="card konbini konbini--terr"
+        class="card konbini konbini--terr reveal"
+        :class="{ 'is-visible': mounted }"
         role="link"
         tabindex="0"
         :aria-label="t.terrariumEnter"
@@ -267,8 +324,8 @@ onMounted(() => {
       >
         <div
           class="konbini__stage konbini__stage--terr"
-          @mousemove="onTerMove"
-          @mouseleave="onTerLeave"
+          @pointermove="onTerMove"
+          @pointerleave="onTerLeave"
         >
           <span class="konbini__badge konbini__badge--terr">
             <i class="konbini__badge-dot konbini__badge-dot--terr" />
@@ -357,6 +414,100 @@ onMounted(() => {
           </div>
         </div>
       </article>
+
+      <!-- 小屋 · 首屏同款 3D 实例（共用加载/光照/生命周期） -->
+      <article
+        class="card konbini konbini--house reveal"
+        :class="{ 'is-visible': mounted }"
+        role="link"
+        tabindex="0"
+        :aria-label="t.houseEnter"
+        @pointerdown="onHouseDown"
+        @click="onHouseClick"
+        @keydown.enter="enterHouse"
+        @keydown.space.prevent="enterHouse"
+      >
+        <div class="konbini__stage konbini__stage--house">
+          <span class="konbini__badge konbini__badge--house">
+            <i class="konbini__badge-dot konbini__badge-dot--house" />
+            {{ t.houseStatus }}
+          </span>
+
+          <HousePreviewCard :fail-text="t.houseFail" />
+
+          <span class="konbini__enter konbini__enter--house konbini__enter--drag">
+            {{ t.houseDrag }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+              <path d="M4 8h10a3.5 3.5 0 0 1 0 7H5M8 5 4 8l4 3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </div>
+
+        <div class="konbini__info">
+          <div class="konbini__head">
+            <h3 class="konbini__title">
+              {{ t.houseTitle }}
+              <span class="konbini__title-en">{{ t.houseTitleEn }}</span>
+            </h3>
+            <span class="konbini__eta">3D</span>
+          </div>
+
+          <p class="konbini__enter-line">{{ t.houseEnter }}</p>
+
+          <p class="konbini__desc">{{ t.houseDesc }}</p>
+
+          <div class="konbini__tags">
+            <span v-for="tag in t.houseTags" :key="tag" class="konbini__tag">{{ tag }}</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 海边灯塔夜景 · 实时 3D 卡片 -->
+      <article
+        class="card konbini konbini--sea reveal"
+        :class="{ 'is-visible': mounted }"
+        role="link"
+        tabindex="0"
+        :aria-label="t.lighthouseEnter"
+        @pointerdown="onSeaDown"
+        @click="onSeaClick"
+        @keydown.enter="enterLighthouse"
+        @keydown.space.prevent="enterLighthouse"
+      >
+        <div class="konbini__stage konbini__stage--sea">
+          <span class="konbini__badge konbini__badge--sea">
+            <i class="konbini__badge-dot konbini__badge-dot--sea" />
+            {{ t.lighthouseStatus }}
+          </span>
+
+          <LighthouseCard :fail-text="t.lighthouseFail" />
+
+          <span class="konbini__enter konbini__enter--sea konbini__enter--drag">
+            {{ t.lighthouseDrag }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+              <path d="M4 8h10a3.5 3.5 0 0 1 0 7H5M8 5 4 8l4 3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </div>
+
+        <div class="konbini__info">
+          <div class="konbini__head">
+            <h3 class="konbini__title">
+              {{ t.lighthouseTitle }}
+              <span class="konbini__title-en">{{ t.lighthouseTitleEn }}</span>
+            </h3>
+            <span class="konbini__eta">3D</span>
+          </div>
+
+          <p class="konbini__enter-line">{{ t.lighthouseEnter }}</p>
+
+          <p class="konbini__desc">{{ t.lighthouseDesc }}</p>
+
+          <div class="konbini__tags">
+            <span v-for="tag in t.lighthouseTags" :key="tag" class="konbini__tag">{{ tag }}</span>
+          </div>
+        </div>
+      </article>
       </div>
     </div>
   </section>
@@ -368,43 +519,18 @@ onMounted(() => {
   padding-bottom: 120px;
 }
 
-.section-head {
-  opacity: 0;
-  transform: translateY(20px);
-  transition:
-    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.is-ready .section-head {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 /* ================= 卡片 ================= */
 .konbini {
   max-width: 720px;
   margin-inline: auto;
   overflow: hidden;
   cursor: pointer;
-  opacity: 0;
-  transform: translateY(30px);
-  transition:
-    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.12s,
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.12s,
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.is-ready .konbini {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .konbini:hover {
   transform: translateY(-4px);
-  border-color: rgba(61, 220, 132, 0.4);
-  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.5), 0 0 30px rgba(61, 220, 132, 0.1);
+  border-color: var(--accent-border);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28), 0 0 30px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .konbini:active {
@@ -417,15 +543,15 @@ onMounted(() => {
   bottom: 14px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 3;
+  z-index: var(--z-overlay);
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
   color: var(--accent);
   background: rgba(10, 16, 23, 0.72);
-  border: 1px solid rgba(61, 220, 132, 0.32);
+  border: 1px solid var(--accent-border);
   border-radius: 999px;
   padding: 5px 13px;
   white-space: nowrap;
@@ -434,7 +560,7 @@ onMounted(() => {
 }
 
 .konbini:hover .konbini__enter {
-  background: rgba(61, 220, 132, 0.14);
+  background: var(--accent-soft);
   border-color: var(--accent);
 }
 
@@ -446,8 +572,123 @@ onMounted(() => {
   transition: transform 0.25s ease;
 }
 
+/* ================= 小屋 3D 预览卡 ================= */
+.konbini--house {
+  cursor: pointer;
+}
+
+/* 卡片不可点击，按下时不回弹，避免拖拽旋转时整卡抖动 */
+.konbini--house:active {
+  transform: translateY(-4px);
+}
+
+.konbini__stage.konbini__stage--house {
+  background:
+    radial-gradient(ellipse 70% 58% at 50% 64%, rgba(255, 196, 107, 0.13), transparent 70%),
+    radial-gradient(ellipse 90% 70% at 50% 0%, rgba(97, 214, 255, 0.06), transparent 65%),
+    linear-gradient(180deg, #0b1219, #060a0f);
+}
+
+/* 日光主题：展台底色偏暖，但仍保持"展示柜"的深色基调 */
+:global(html[data-theme='light']) .konbini__stage.konbini__stage--house {
+  background:
+    radial-gradient(ellipse 70% 58% at 50% 64%, rgba(255, 196, 107, 0.2), transparent 70%),
+    radial-gradient(ellipse 90% 70% at 50% 0%, rgba(97, 214, 255, 0.08), transparent 65%),
+    linear-gradient(180deg, #131c23, #090f14);
+}
+
+.konbini__stage--house::before {
+  display: none;
+}
+
+.konbini__badge.konbini__badge--house {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+
+.konbini__badge-dot.konbini__badge-dot--house {
+  background: var(--accent);
+  animation-duration: 2.4s;
+}
+
+.konbini__enter--house {
+  color: var(--accent);
+  /* 靠右下角，避开展台正中 */
+  left: auto;
+  right: 16px;
+  transform: none;
+}
+
+/* 触屏也保留「可滑动」提示；提示不挡画面，只占右下角一行 */
+
+/* 3D 降级时不提示拖拽 */
+.konbini__stage.konbini__stage--house:has(.house-preview__ph.is-failed) .konbini__enter--house {
+  display: none;
+}
+
+/* ================= 海边灯塔卡 ================= */
+.konbini--sea {
+  cursor: pointer;
+}
+
+/* 拖拽旋转时整卡不回弹，避免与指针位移打架 */
+.konbini--sea:active {
+  transform: translateY(-4px);
+}
+
+.konbini__stage.konbini__stage--sea {
+  background:
+    radial-gradient(ellipse 78% 62% at 50% 72%, rgba(28, 82, 100, 0.5), transparent 74%),
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(80, 120, 180, 0.08), transparent 66%),
+    linear-gradient(180deg, #04070f, #050b12);
+}
+
+.konbini__stage--sea::before {
+  display: none;
+}
+
+.konbini__badge.konbini__badge--sea {
+  color: #ffd99a;
+  background: rgba(255, 217, 154, 0.12);
+  border-color: rgba(255, 217, 154, 0.28);
+}
+
+.konbini__badge-dot.konbini__badge-dot--sea {
+  background: #ffd99a;
+  box-shadow: 0 0 10px rgba(255, 217, 154, 0.7);
+  animation-duration: 2.2s;
+}
+
+.konbini__enter--sea {
+  color: #ffd99a;
+  left: auto;
+  right: 16px;
+  transform: none;
+  pointer-events: none;
+}
+
+.konbini__enter--drag svg {
+  transform: rotate(-16deg);
+}
+
+.konbini__stage.konbini__stage--sea:has(.lh-preview__ph.is-failed) .konbini__enter--sea {
+  display: none;
+}
+
 /* ================= 3D 舞台 ================= */
 .konbini__stage {
+  /* 舞台内部始终是深色场景，局部换回高亮强调色，避免亮色主题把霓虹压暗 */
+  --accent: #6ee7d8;
+  --accent-soft: rgba(110, 231, 216, 0.14);
+  --accent-border: rgba(110, 231, 216, 0.34);
+  --amber: #ffc46b;
+  --amber-soft: rgba(255, 196, 107, 0.14);
+  --amber-border: rgba(255, 196, 107, 0.32);
+  --ink: #e6edf3;
+  --ink-dim: #93a4b8;
+  --ink-faint: #7e91a6;
+
   position: relative;
   height: 400px;
   display: flex;
@@ -480,15 +721,15 @@ onMounted(() => {
   position: absolute;
   top: 16px;
   left: 18px;
-  z-index: 3;
+  z-index: var(--z-overlay);
   display: inline-flex;
   align-items: center;
   gap: 7px;
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
   color: var(--amber);
   background: var(--amber-soft);
-  border: 1px solid rgba(255, 180, 84, 0.3);
+  border: 1px solid var(--amber-border);
   border-radius: 999px;
   padding: 4px 11px;
 }
@@ -512,10 +753,10 @@ onMounted(() => {
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--ink-faint);
   white-space: nowrap;
-  z-index: 3;
+  z-index: var(--z-overlay);
 }
 
 /* ================= CSS 3D 场景 ================= */
@@ -627,7 +868,7 @@ onMounted(() => {
 
 .front__sign-text {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   letter-spacing: 0.22em;
   color: #04150c;
@@ -636,7 +877,7 @@ onMounted(() => {
 
 .front__sign-sub {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   letter-spacing: 0.1em;
   color: #04150c;
@@ -820,25 +1061,34 @@ onMounted(() => {
 
 .konbini__title-en {
   margin-left: 8px;
-  font-size: 13px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--ink-faint);
 }
 
 .konbini__eta {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--amber);
   background: var(--amber-soft);
-  border: 1px solid rgba(255, 180, 84, 0.3);
+  border: 1px solid var(--amber-border);
   border-radius: 999px;
   padding: 2px 9px;
 }
 
+/* 标题下的「点击进入」提示 */
+.konbini__enter-line {
+  margin: 0 0 14px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
 .konbini__desc {
-  font-size: 14.5px;
+  font-size: var(--fs-md);
   line-height: 1.7;
   color: var(--ink-dim);
   margin-bottom: 18px;
@@ -852,7 +1102,7 @@ onMounted(() => {
 
 .konbini__tag {
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
   color: var(--ink-dim);
   background: var(--bg-1);
   border: 1px solid var(--line);
@@ -908,7 +1158,7 @@ onMounted(() => {
   }
 
   .front__sign-text {
-    font-size: 9.5px;
+    font-size: var(--fs-2xs);
     letter-spacing: 0.16em;
   }
 
@@ -953,14 +1203,6 @@ onMounted(() => {
   flex: 1;
 }
 
-.other__grid > .konbini:nth-child(2) {
-  transition-delay: 0.28s, 0.28s, 0s, 0s;
-}
-
-.other__grid > .konbini:nth-child(3) {
-  transition-delay: 0.44s, 0.44s, 0s, 0s;
-}
-
 @media (min-width: 1181px) {
   .other__grid .konbini__stage {
     height: 360px;
@@ -998,6 +1240,48 @@ onMounted(() => {
   .other__grid > .konbini--terr .konbini__info {
     align-self: center;
     padding: 34px 34px 36px;
+  }
+}
+
+/* 小屋卡：四张卡片里放最后，桌面与平板都横跨整行做展示位 */
+@media (min-width: 901px) {
+  .other__grid > .konbini--house {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1.28fr 0.72fr;
+  }
+
+  .other__grid > .konbini--house .konbini__stage {
+    height: 100%;
+    min-height: 420px;
+    border-bottom: 0;
+    border-right: 1px solid var(--line);
+  }
+
+  .other__grid > .konbini--house .konbini__info {
+    align-self: center;
+    padding: 34px 36px 36px;
+  }
+}
+
+/* 灯塔卡：与小屋卡同宽的展示位 */
+@media (min-width: 901px) {
+  .other__grid > .konbini--sea {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1.28fr 0.72fr;
+  }
+
+  .other__grid > .konbini--sea .konbini__stage {
+    height: 100%;
+    min-height: 440px;
+    border-bottom: 0;
+    border-right: 1px solid var(--line);
+  }
+
+  .other__grid > .konbini--sea .konbini__info {
+    align-self: center;
+    padding: 34px 36px 36px;
   }
 }
 
@@ -1284,9 +1568,9 @@ onMounted(() => {
 }
 
 .konbini__eta--terr {
-  color: #9fe2ff;
-  background: rgba(143, 216, 255, 0.1);
-  border-color: rgba(143, 216, 255, 0.3);
+  color: var(--cyan);
+  background: color-mix(in srgb, var(--cyan) 10%, transparent);
+  border-color: color-mix(in srgb, var(--cyan) 30%, transparent);
 }
 
 /* ================= 微光之境：CSS 3D 生态箱 ================= */

@@ -15,13 +15,20 @@ function smoothstep(edge0: number, edge1: number, x: number) {
 }
 
 export function createKonbiniScene(container: HTMLElement): () => void {
+  /* ================= 渲染能力探测 ================= */
+  const coarse = window.matchMedia('(pointer: coarse)').matches
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // 低端机（粗指针 + 内存 ≤4GB）关抗锯齿，移动端统一把 DPR 压到 1.5
+  const lowPower =
+    coarse && ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <= 4
+
   /* ================= 渲染器 ================= */
   const renderer = new THREE.WebGLRenderer({
-    antialias: true,
+    antialias: !lowPower,
     alpha: false,
     powerPreference: 'high-performance',
   })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 2))
   renderer.setSize(container.clientWidth, container.clientHeight)
   renderer.outputColorSpace = THREE.SRGBColorSpace
   // 卡通渲染不需要色调映射压色，保持高饱和的动画感
@@ -40,7 +47,8 @@ export function createKonbiniScene(container: HTMLElement): () => void {
   // 起始机位：略低的斜俯视角，既能看到整块底座，也能看进店内
   const camFar = new THREE.Vector3(7.3, 5.1, 10.2)
   const camNear = new THREE.Vector3(5.6, 3.3, 7.9)
-  camera.position.copy(camFar)
+  // 减少动效偏好下跳过开场推进，直接给到最终机位
+  camera.position.copy(reduced ? camNear : camFar)
 
   /* ================= 控制器 ================= */
   const controls = new OrbitControls(camera, renderer.domElement)
@@ -54,7 +62,7 @@ export function createKonbiniScene(container: HTMLElement): () => void {
   controls.maxDistance = 19
   controls.minPolarAngle = Math.PI * 0.1
   controls.maxPolarAngle = Math.PI * 0.48
-  controls.autoRotate = true
+  controls.autoRotate = !reduced
   controls.autoRotateSpeed = 0.42
   controls.update()
 
@@ -94,6 +102,7 @@ export function createKonbiniScene(container: HTMLElement): () => void {
   /* ================= 循环 ================= */
   let raf = 0
   let disposed = false
+  let running = true
   let elapsed = 0
   let intro = 0
   const clock = new THREE.Clock()
@@ -109,14 +118,14 @@ export function createKonbiniScene(container: HTMLElement): () => void {
   }
 
   function animate() {
-    if (disposed) return
+    if (disposed || !running) return
     raf = requestAnimationFrame(animate)
 
     const dt = Math.min(clock.getDelta(), 0.05)
     elapsed += dt
 
     // 开场镜头推进
-    if (intro < 1 && !userTookOver) {
+    if (!reduced && intro < 1 && !userTookOver) {
       intro = Math.min(1, intro + dt / 1.8)
       const e = 1 - Math.pow(1 - intro, 3)
       camera.position.lerpVectors(camFar, camNear, e)
@@ -131,6 +140,20 @@ export function createKonbiniScene(container: HTMLElement): () => void {
   }
 
   animate()
+
+  // 页面切到后台时停掉 rAF，回来再恢复，避免空转耗电
+  function onVisibilityChange() {
+    if (document.hidden) {
+      running = false
+      cancelAnimationFrame(raf)
+      raf = 0
+    } else if (!disposed && !running) {
+      running = true
+      clock.getDelta()
+      raf = requestAnimationFrame(animate)
+    }
+  }
+  document.addEventListener('visibilitychange', onVisibilityChange)
 
   /* ================= 尺寸响应 ================= */
   function resize() {
@@ -152,6 +175,7 @@ export function createKonbiniScene(container: HTMLElement): () => void {
     cancelAnimationFrame(raf)
     clock.stop()
 
+    document.removeEventListener('visibilitychange', onVisibilityChange)
     ro.disconnect()
     window.removeEventListener('resize', resize)
     controls.removeEventListener('start', onStart)
