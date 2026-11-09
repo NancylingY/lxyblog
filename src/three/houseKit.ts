@@ -739,7 +739,14 @@ export function yieldContextTo(id: string): void {
   const other = candidates.get(holder)
   if (!me || !other) return
   if (performance.now() - lastYieldAt < 1500) return
-  if (me.ratio > 0.2 && me.ratio > other.ratio + 0.15) {
+  /*
+   * 两张 3D 卡可能同时几乎占满视口（同一行、或页面滚到底时相邻两行都完整可见），
+   * 此时 0.15 的差值门槛永远达不到，后进场的那张会一直卡在「加载 3D 引擎」。
+   * 因此补一条：自己完整可见、且比持有者更完整时直接让出；
+   * 两者同样完整时保持现状，避免来回抢。
+   */
+  const meFull = me.ratio >= 0.99
+  if ((meFull && me.ratio > other.ratio) || (me.ratio > 0.2 && me.ratio > other.ratio + 0.15)) {
     lastYieldAt = performance.now()
     other.release()
   }
