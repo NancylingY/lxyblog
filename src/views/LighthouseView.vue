@@ -21,7 +21,12 @@ const progress = ref<LighthouseProgress | null>(null)
 const entered = ref(false)
 const beamOn = ref(true)
 
-const MODEL_URL = `${import.meta.env.BASE_URL}models/lighthouse-v2.glb`
+// 移动端（触屏）与低端机（内存 ≤4GB）加载 lite 模型缩短下载等待，桌面保持高模
+const coarse = window.matchMedia('(pointer: coarse)').matches
+const memoryGB = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8
+const MODEL_URL = `${import.meta.env.BASE_URL}models/lighthouse-v2${
+  coarse || memoryGB <= 4 ? '-lite' : ''
+}.glb`
 
 let handle: LighthouseHandle | null = null
 let enterTimer = 0
