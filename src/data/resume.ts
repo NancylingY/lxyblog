@@ -80,7 +80,7 @@ export const projects: Project[] = [
       { group: '工具', items: ['Git', 'RESTful API'] },
     ],
     color: '#4fbfb5',
-    logo: 'https://aka.doubaocdn.com/s/MUdRjMVOC0',
+    logo: `${import.meta.env.BASE_URL}project-logos/ehr.svg`,
     video: './videos/ehr-demo.mp4',
   },
   {
@@ -100,7 +100,7 @@ export const projects: Project[] = [
       { group: '协作&测试', items: ['Git', 'Postman'] },
     ],
     color: '#59bf8c',
-    logo: 'https://aka.doubaocdn.com/s/yz7Oa4DMBL',
+    logo: `${import.meta.env.BASE_URL}project-logos/smartread.svg`,
     video: './videos/smartread-demo.mp4',
   },
   {
@@ -120,7 +120,7 @@ export const projects: Project[] = [
       { group: '工具', items: ['Maven', 'Git', 'RESTful API'] },
     ],
     color: '#5fa8c8',
-    logo: 'https://aka.doubaocdn.com/s/SpZhnBu9Vl',
+    logo: `${import.meta.env.BASE_URL}project-logos/canteen.svg`,
     video: './videos/canteen-demo.mp4',
   },
   {
@@ -138,7 +138,7 @@ export const projects: Project[] = [
       { group: '测试验证', items: ['Playwright（开发用）'] },
     ],
     color: '#8fbe6f',
-    logo: 'https://aka.doubaocdn.com/s/rGgfVovKT0',
+    logo: `${import.meta.env.BASE_URL}project-logos/happywoo.svg`,
     video: './videos/happywoo-demo.mp4',
   },
   {
@@ -159,7 +159,7 @@ export const projects: Project[] = [
       { group: '工具', items: ['Git', 'Swagger', 'Postman'] },
     ],
     color: '#d9a05f',
-    logo: 'https://aka.doubaocdn.com/s/Kl8pVQGL8i',
+    logo: `${import.meta.env.BASE_URL}project-logos/foodtalk.svg`,
   },
   {
     id: 'campus-admin',
@@ -178,7 +178,7 @@ export const projects: Project[] = [
       { group: '工具', items: ['HBuilderX', 'Git', 'Axios'] },
     ],
     color: '#a98cc4',
-    logo: 'https://aka.doubaocdn.com/s/JF26gix0BC',
+    logo: `${import.meta.env.BASE_URL}project-logos/campus-admin.svg`,
   },
 ]
 
