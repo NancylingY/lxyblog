@@ -1,72 +1,43 @@
 <script setup lang="ts">
 /**
- * 首屏右侧 3D 展示卡：厚板 + Canvas 文字纹理 + 小屋。
- * 场景代码动态 import，不进首屏关键路径；WebGL 不可用时保留原 2D 卡作为降级。
+ * 首屏全幅 3D 舞台容器
+ * - 零外部模型下载，首帧立即启动 GLSL 流体晶体与星轨仪
+ * - 视口外自动暂停渲染并回收 WebGL 上下文，避免与其他 3D 页面冲突
+ * - WebGL 不可用时优雅降级为轻盈 CSS 光环核心
  */
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useTheme } from '../composables/useTheme'
-import HeroShowcase from './HeroShowcase.vue'
-import ParticleField from './ParticleField.vue'
-import type { HeroStageHandle } from '../three/heroStage'
+import type { HeroKineticHandle, HeroKineticMode } from '../three/heroKinetic'
+
+const props = defineProps<{
+  mode: HeroKineticMode
+  slotEl: HTMLElement | null
+}>()
 
 const { isLight } = useTheme()
 const host = ref<HTMLElement | null>(null)
 const ready = ref(false)
+const failed = ref(false)
 
-// 首屏用 lite 模型缩短首访等待；「其他」页卡片仍用高模
-const MODEL_URL = `${import.meta.env.BASE_URL}models/cozy-house-lite.glb`
-// 地面与房屋同一原点：lite 地块，晚到淡入，缺文件时只显示房屋
-const GROUND_URL = `${import.meta.env.BASE_URL}models/ground-card-lite.glb`
-
-let handle: HeroStageHandle | null = null
+let handle: HeroKineticHandle | null = null
 let observer: IntersectionObserver | null = null
-let idleId = 0
-let usingIdleCallback = false
 let disposeTimer = 0
-let retryTimer = 0
-let retries = 0
 let generation = 0
 let alive = true
-
-function cancelIdle() {
-  if (!idleId) return
-  if (usingIdleCallback) window.cancelIdleCallback(idleId)
-  else clearTimeout(idleId)
-  idleId = 0
-}
-
-function scheduleInit() {
-  if (!alive || !host.value || handle || idleId) return
-  const gen = generation
-  const run = () => {
-    idleId = 0
-    void init(gen)
-  }
-  const idleWindow = window as Window & {
-    requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number
-  }
-  if (typeof idleWindow.requestIdleCallback === 'function') {
-    usingIdleCallback = true
-    idleId = idleWindow.requestIdleCallback(run, { timeout: 2000 })
-  } else {
-    usingIdleCallback = false
-    idleId = window.setTimeout(run, 320)
-  }
-}
 
 async function init(gen: number) {
   if (!alive || generation !== gen || !host.value || handle) return
   try {
-    // 动态拆包：three / GLTF / 场景代码都不进首屏主包
-    const mod = await import('../three/heroStage')
+    const mod = await import('../three/heroKinetic')
     if (!alive || generation !== gen || !host.value || handle) return
-    const created = await mod.createHeroStageScene(host.value, {
-      url: MODEL_URL,
-      groundUrl: GROUND_URL,
+    const created = await mod.createHeroKineticScene(host.value, {
       light: isLight.value,
+      mode: props.mode,
+      slotEl: props.slotEl,
       onReady: () => {
         if (!alive || generation !== gen) return
         ready.value = true
+        failed.value = false
       },
     })
     if (!alive || generation !== gen) {
@@ -74,17 +45,9 @@ async function init(gen: number) {
       return
     }
     handle = created
-    retries = 0
   } catch {
-    /* 暂时抢不到 WebGL context（路由切换瞬间）或加载失败：保留 2D 卡并短延迟重试 */
-    if (!alive || generation !== gen || handle) return
-    if (retries >= 2) return
-    retries += 1
-    clearTimeout(retryTimer)
-    retryTimer = window.setTimeout(() => {
-      retryTimer = 0
-      scheduleInit()
-    }, 800 * retries)
+    if (!alive || generation !== gen) return
+    failed.value = true
   }
 }
 
@@ -93,7 +56,6 @@ function destroyScene() {
   handle.dispose()
   handle = null
   ready.value = false
-  retries = 0
 }
 
 function scheduleDispose() {
@@ -101,14 +63,20 @@ function scheduleDispose() {
   disposeTimer = window.setTimeout(() => {
     disposeTimer = 0
     destroyScene()
-  }, 3500)
+  }, 4000)
 }
+
+function pulse() {
+  handle?.pulse()
+}
+
+defineExpose({ pulse })
 
 onMounted(() => {
   const el = host.value
   if (!el) return
   if (typeof IntersectionObserver === 'undefined') {
-    scheduleInit()
+    void init(generation)
     return
   }
   observer = new IntersectionObserver(
@@ -119,7 +87,7 @@ onMounted(() => {
         clearTimeout(disposeTimer)
         disposeTimer = 0
         if (handle) handle.setActive(true)
-        else scheduleInit()
+        else void init(generation)
       } else {
         handle?.setActive(false)
         if (handle) scheduleDispose()
@@ -134,12 +102,24 @@ watch(isLight, (light) => {
   handle?.setLight(light)
 })
 
+watch(
+  () => props.mode,
+  (mode) => {
+    handle?.setMode(mode)
+  },
+)
+
+watch(
+  () => props.slotEl,
+  (el) => {
+    handle?.setSlotEl(el)
+  },
+)
+
 onBeforeUnmount(() => {
   alive = false
   generation += 1
-  cancelIdle()
   clearTimeout(disposeTimer)
-  clearTimeout(retryTimer)
   observer?.disconnect()
   observer = null
   destroyScene()
@@ -147,73 +127,121 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="hero-stage">
-    <!-- 3D 未就绪 / WebGL 不可用时的降级显示 -->
-    <div v-if="!ready" class="hero-stage__fallback" aria-hidden="true">
-      <HeroShowcase v-if="isLight" />
-      <ParticleField v-else />
+  <div class="hero-kinetic" aria-hidden="true">
+    <!-- 柔光环境背晕，衬托日夜两种氛围 -->
+    <div class="hero-kinetic__aura" />
+
+    <!-- WebGL 不可用时的纯 CSS 光环降级 -->
+    <div v-if="failed" class="hero-kinetic__fallback">
+      <div class="fallback-orb">
+        <span class="fallback-orb__core" />
+        <span class="fallback-orb__ring fallback-orb__ring--a" />
+        <span class="fallback-orb__ring fallback-orb__ring--b" />
+      </div>
     </div>
 
-    <div ref="host" class="hero-stage__gl" :class="{ 'is-ready': ready }" />
-
-    <!-- canvas 文字不可选、读屏不可达，这里补等价文本 -->
-    <p class="hero-stage__a11y">
-      展示卡内容：practice.ts 伪代码，const practice = { role: 'full-stack', flow: 'design →
-      ship', shipped: 6 }；状态 OPEN TO SELECTED WORK；设计 token：ink、teal、amber；交付数量
-      06。板前展示台上立着一座小屋模型，黑夜模式下窗户与门廊灯会亮起。
-    </p>
+    <div ref="host" class="hero-kinetic__gl" :class="{ 'is-ready': ready }" />
   </div>
 </template>
 
 <style scoped>
-.hero-stage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  margin-inline: auto;
-}
-
-.hero-stage__fallback {
+.hero-kinetic {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: var(--z-base);
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.hero-stage__gl {
+.hero-kinetic__aura {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 52% 58% at 74% 48%, rgba(13, 116, 144, 0.14), transparent 68%),
+    radial-gradient(ellipse 38% 42% at 84% 26%, rgba(245, 158, 11, 0.13), transparent 64%);
+  transition: opacity 0.45s ease;
+}
+
+[data-theme='dark'] .hero-kinetic__aura {
+  background:
+    radial-gradient(ellipse 54% 58% at 74% 48%, rgba(61, 220, 132, 0.14), transparent 68%),
+    radial-gradient(ellipse 40% 44% at 84% 28%, rgba(86, 200, 255, 0.12), transparent 64%);
+}
+
+.hero-kinetic__gl {
   position: absolute;
   inset: 0;
   opacity: 0;
-  transition: opacity 0.55s ease;
+  transition: opacity 0.65s ease;
 }
 
-.hero-stage__gl.is-ready {
+.hero-kinetic__gl.is-ready {
   opacity: 1;
 }
 
-.hero-stage__gl :deep(canvas) {
+.hero-kinetic__gl :deep(canvas) {
   display: block;
   width: 100% !important;
   height: 100% !important;
 }
 
-.hero-stage__a11y {
+.hero-kinetic__fallback {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
+  inset: 0;
+  display: grid;
+  place-items: center;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-stage__gl {
-    transition: none;
+.fallback-orb {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  transform: translateX(22vw);
+}
+
+.fallback-orb__core {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 32%, #fffdf8, var(--accent) 56%, var(--amber));
+  box-shadow: 0 20px 60px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.fallback-orb__ring {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  animation: orb-spin 16s linear infinite;
+}
+
+.fallback-orb__ring--b {
+  inset: -8%;
+  border-color: color-mix(in srgb, var(--amber) 40%, transparent);
+  animation-direction: reverse;
+  animation-duration: 24s;
+}
+
+@keyframes orb-spin {
+  from { transform: rotateX(68deg) rotateZ(0deg); }
+  to { transform: rotateX(68deg) rotateZ(360deg); }
+}
+
+@media (max-width: 960px) {
+  .hero-kinetic__aura {
+    background:
+      radial-gradient(ellipse 84% 40% at 50% 24%, rgba(13, 116, 144, 0.14), transparent 72%),
+      radial-gradient(ellipse 65% 32% at 64% 16%, rgba(245, 158, 11, 0.12), transparent 68%);
+  }
+
+  [data-theme='dark'] .hero-kinetic__aura {
+    background:
+      radial-gradient(ellipse 84% 40% at 50% 24%, rgba(61, 220, 132, 0.15), transparent 72%),
+      radial-gradient(ellipse 65% 32% at 64% 16%, rgba(86, 200, 255, 0.12), transparent 68%);
+  }
+
+  .fallback-orb {
+    transform: translateY(-22vh) scale(0.75);
   }
 }
 </style>

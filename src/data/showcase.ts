@@ -63,6 +63,16 @@ export function useShowcaseCopy() {
           filterAll: '全部',
           hasDemo: '演示视频',
 
+          hero3dModes: [
+            { id: 'prism', label: '流体晶体' },
+            { id: 'lattice', label: '量子晶格' },
+            { id: 'pulse', label: '星轨核心' },
+          ],
+          hero3dPulse: '脉冲',
+          hero3dHint: '拖拽旋转 · 点击释放能量波',
+          hero3dLabBtn: '3D 实验室',
+          hero3dAria: '交互式 3D 流体晶体与星轨仪舞台',
+
           backToTop: '回到顶部',
         }
       : {
@@ -111,6 +121,16 @@ export function useShowcaseCopy() {
           filterLabel: 'Filter projects by role',
           filterAll: 'All',
           hasDemo: 'Demo video',
+
+          hero3dModes: [
+            { id: 'prism', label: 'Prism' },
+            { id: 'lattice', label: 'Lattice' },
+            { id: 'orbit', label: 'Orbit' },
+          ],
+          hero3dPulse: 'Pulse',
+          hero3dHint: 'Drag to orbit · Click to pulse',
+          hero3dLabBtn: '3D Lab',
+          hero3dAria: 'Interactive 3D kinetic crystal and orbital astrolabe stage',
 
           backToTop: 'Back to top',
         },
