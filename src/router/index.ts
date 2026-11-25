@@ -14,6 +14,22 @@ const router = createRouter({
   },
   routes: [
     {
+      path: '/pelican-express',
+      name: 'pelican-express',
+      component: () => import('../views/PelicanRideView.vue'),
+    },
+    {
+      path: '/prompt-enhancer',
+      name: 'prompt-enhancer',
+      component: () => import('../views/PromptEnhancerView.vue'),
+    },
+    {
+      path: '/pangolin',
+      name: 'pangolin',
+      component: () => import('../views/PangolinView.vue'),
+      meta: { bare: true },
+    },
+    {
       path: '/',
       name: 'home',
       component: HomeView,
@@ -22,6 +38,12 @@ const router = createRouter({
       path: '/other',
       name: 'other',
       component: OtherView,
+    },
+    {
+      path: '/tools',
+      alias: '/boards',
+      name: 'tools',
+      component: () => import('../views/ToolsView.vue'),
     },
     {
       // 实时 Token 看板（iframe 嵌入，独立页避免拖慢首页）
@@ -41,6 +63,13 @@ const router = createRouter({
       path: '/hospital',
       name: 'hospital',
       component: () => import('../views/HospitalView.vue'),
+      meta: { bare: true },
+    },
+    {
+      // 3D 微缩场景：积木花园（懒加载 three.js）
+      path: '/brick-garden',
+      name: 'brick-garden',
+      component: () => import('../views/BrickGardenView.vue'),
       meta: { bare: true },
     },
     {

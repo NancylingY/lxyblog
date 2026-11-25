@@ -2,21 +2,32 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useResume } from '../data/resume'
-import { dashboard } from '../data/dashboard'
+import { useScrollProgress } from '../composables/useScrollProgress'
 import { scrollToHash } from '../utils/scroll'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import ThemeToggle from './ThemeToggle.vue'
 
 const route = useRoute()
 const router = useRouter()
-const scrolled = ref(false)
+const { progress, scrollY } = useScrollProgress()
+const scrolled = computed(() => scrollY.value > 24)
 const menuOpen = ref(false)
 const toggleRef = ref<HTMLButtonElement | null>(null)
 /** 当前滚动到的首页章节 */
 const activeHash = ref('')
 const { t, profile } = useResume()
+const logoUrl = `${import.meta.env.BASE_URL}Hlogo.png`
 
-const SECTION_IDS = ['about', 'skills', 'projects', 'contact']
+const OBSERVED_IDS = ['top', 'about', 'process', 'skills', 'projects', 'lab', 'contact']
+const SECTION_TO_NAV: Record<string, string> = {
+  top: '',
+  about: '#about',
+  process: '#about',
+  skills: '#skills',
+  projects: '#projects',
+  lab: '#projects',
+  contact: '#contact',
+}
 let sectionObserver: IntersectionObserver | null = null
 
 interface NavItem {
@@ -28,19 +39,20 @@ interface NavItem {
 }
 
 const links = computed<NavItem[]>(() => {
-  const items: NavItem[] = [
+  return [
     { hash: '#about', label: t.value.navAbout },
     { hash: '#skills', label: t.value.navSkills },
     { hash: '#projects', label: t.value.navProjects },
     { hash: '#contact', label: t.value.navContact },
     { to: '/other', label: t.value.navOther },
+    { to: '/tools', label: t.value.navTools },
   ]
-  // 看板地址没配置时不显示入口，避免把访客引到空页面
-  if (dashboard.url) items.push({ to: '/stats', label: t.value.navStats })
-  return items
 })
 
+const TOOL_PATHS = ['/tools', '/boards', '/prompt-enhancer', '/stats']
+
 function isActive(link: NavItem) {
+  if (link.to === '/tools') return TOOL_PATHS.includes(route.path)
   if (link.to) return route.path === link.to
   return route.path === '/' && activeHash.value === link.hash
 }
@@ -52,7 +64,7 @@ async function observeSections() {
   if (route.path !== '/') return
   await nextTick()
 
-  const sections = SECTION_IDS.map((id) => document.getElementById(id)).filter(
+  const sections = OBSERVED_IDS.map((id) => document.getElementById(id)).filter(
     (el): el is HTMLElement => !!el,
   )
   if (!sections.length) return
@@ -60,10 +72,12 @@ async function observeSections() {
   sectionObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) activeHash.value = `#${entry.target.id}`
+        if (entry.isIntersecting) {
+          activeHash.value = SECTION_TO_NAV[entry.target.id] ?? ''
+        }
       })
     },
-    { rootMargin: '-45% 0px -50% 0px', threshold: 0 },
+    { rootMargin: '-42% 0px -52% 0px', threshold: 0 },
   )
   sections.forEach((section) => sectionObserver?.observe(section))
 }
@@ -88,17 +102,6 @@ watch(menuOpen, async (open) => {
   await nextTick()
   document.querySelector<HTMLElement>('.nav__mobile-link')?.focus()
 })
-
-let scrollFrame = 0
-
-/** 滚动事件只用来标记「是否离开顶部」，用 rAF 合并到每帧一次 */
-function onScroll() {
-  if (scrollFrame) return
-  scrollFrame = requestAnimationFrame(() => {
-    scrollFrame = 0
-    scrolled.value = window.scrollY > 24
-  })
-}
 
 async function goTo(link: NavItem) {
   menuOpen.value = false
@@ -125,17 +128,13 @@ async function goTo(link: NavItem) {
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('keydown', onKeydown)
-  onScroll()
   // NavBar 的 onMounted 早于首页区块挂载，等一帧后再建立观察
   requestAnimationFrame(observeSections)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('scroll', onScroll)
   window.removeEventListener('keydown', onKeydown)
-  if (scrollFrame) cancelAnimationFrame(scrollFrame)
   sectionObserver?.disconnect()
 })
 </script>
@@ -143,8 +142,8 @@ onBeforeUnmount(() => {
 <template>
   <header class="nav" :class="{ 'nav--scrolled': scrolled }">
     <div class="container nav__inner">
-      <router-link class="nav__brand" to="/" :aria-label="t.navHome">
-        <span class="nav__brand-sign">~</span>
+      <router-link class="nav__brand" to="/" :aria-label="t.navHome" @click="closeMenu(false)">
+        <img class="nav__brand-logo" :src="logoUrl" alt="" width="28" height="28" />
         <span class="nav__brand-name">{{ profile.name }}</span>
         <span class="nav__brand-cursor">_</span>
       </router-link>
@@ -157,6 +156,7 @@ onBeforeUnmount(() => {
             :href="link.to ? `#${link.to}` : `#/${link.hash}`"
             class="nav__link"
             :class="{ 'nav__link--active': isActive(link) }"
+            :aria-current="isActive(link) ? 'page' : undefined"
             @click.prevent="goTo(link)"
           >
             <span class="nav__link-index">0{{ i + 1 }}</span>
@@ -183,6 +183,22 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
+    <!-- 底部阅读进度条 -->
+    <div class="nav__progress-track" aria-hidden="true">
+      <span
+        class="nav__progress-bar"
+        :style="{ transform: `scaleX(${progress})`, opacity: progress > 0.005 ? 1 : 0 }"
+      />
+    </div>
+
+    <!-- 移动端菜单遮罩 -->
+    <div
+      class="nav__backdrop"
+      :class="{ 'nav__backdrop--open': menuOpen }"
+      aria-hidden="true"
+      @click="closeMenu(false)"
+    />
+
     <div
       id="nav-mobile"
       class="nav__mobile"
@@ -190,14 +206,16 @@ onBeforeUnmount(() => {
       :aria-hidden="!menuOpen"
     >
       <a
-        v-for="link in links"
+        v-for="(link, i) in links"
         :key="link.hash || link.to"
         :href="link.to ? `#${link.to}` : `#/${link.hash}`"
         class="nav__mobile-link"
         :class="{ 'nav__mobile-link--active': isActive(link) }"
+        :style="{ transitionDelay: menuOpen ? `${i * 35}ms` : '0ms' }"
         @click.prevent="goTo(link)"
       >
-        {{ link.label }}
+        <span class="nav__mobile-index">0{{ i + 1 }}</span>
+        <span>{{ link.label }}</span>
       </a>
     </div>
   </header>
@@ -214,15 +232,42 @@ onBeforeUnmount(() => {
   transition:
     background 0.3s ease,
     border-color 0.3s ease,
+    box-shadow 0.3s ease,
     backdrop-filter 0.3s ease;
   border-bottom: 1px solid transparent;
 }
 
 .nav--scrolled {
   background: var(--nav-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
   border-bottom-color: var(--line);
+  box-shadow: var(--nav-shadow);
+}
+
+.nav__progress-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.nav__progress-bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--accent), var(--amber));
+  transition: opacity 0.25s ease;
+  will-change: transform;
+}
+
+[data-theme='dark'] .nav__progress-bar {
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  box-shadow: 0 0 10px var(--accent);
 }
 
 .nav__inner {
@@ -235,15 +280,27 @@ onBeforeUnmount(() => {
 .nav__brand {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-family: var(--font-mono);
   font-size: var(--fs-xl);
   font-weight: 600;
   color: var(--ink);
+  transition: color 0.2s ease;
 }
 
-.nav__brand-sign {
+.nav__brand:hover {
   color: var(--accent);
+}
+
+.nav__brand-logo {
+  flex: none;
+  display: block;
+  border-radius: 7px;
+  transition: transform 0.35s var(--ease-out);
+}
+
+.nav__brand:hover .nav__brand-logo {
+  transform: rotate(-8deg) scale(1.06);
 }
 
 .nav__brand-cursor {
@@ -260,7 +317,7 @@ onBeforeUnmount(() => {
 .nav__links {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .nav__right {
@@ -279,20 +336,48 @@ onBeforeUnmount(() => {
   transition: color 0.2s ease, background 0.2s ease, transform 0.18s ease;
 }
 
-.nav__link:active {
-  transform: scale(0.94);
+.nav__link::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.28s var(--ease-out);
 }
 
-.nav__link:hover,
+.nav__link:active {
+  transform: scale(0.95);
+}
+
+.nav__link:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
 .nav__link--active {
   color: var(--accent);
   background: var(--accent-soft);
+}
+
+.nav__link--active::after {
+  transform: scaleX(1);
 }
 
 .nav__link-index {
   font-size: var(--fs-xs);
   color: var(--ink-faint);
   margin-right: 4px;
+  transition: color 0.2s ease;
+}
+
+.nav__link:hover .nav__link-index,
+.nav__link--active .nav__link-index {
+  color: var(--accent);
 }
 
 .nav__toggle {
@@ -303,6 +388,11 @@ onBeforeUnmount(() => {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   padding: 9px 10px;
+  transition: border-color 0.2s ease;
+}
+
+.nav__toggle:hover {
+  border-color: var(--accent);
 }
 
 .nav__toggle span {
@@ -326,7 +416,8 @@ onBeforeUnmount(() => {
   transform: translateY(-7px) rotate(-45deg);
 }
 
-.nav__mobile {
+.nav__mobile,
+.nav__backdrop {
   display: none;
 }
 
@@ -339,6 +430,25 @@ onBeforeUnmount(() => {
     display: flex;
   }
 
+  .nav__backdrop {
+    display: block;
+    position: fixed;
+    inset: var(--nav-h) 0 0 0;
+    background: rgba(7, 13, 20, 0.32);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+  }
+
+  .nav__backdrop--open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.25s ease, visibility 0s;
+  }
+
   .nav__mobile {
     display: flex;
     flex-direction: column;
@@ -346,16 +456,18 @@ onBeforeUnmount(() => {
     top: var(--nav-h);
     left: 0;
     right: 0;
+    z-index: 1;
     background: var(--nav-menu-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--line);
-    padding: 10px 24px 18px;
-    transform: translateY(-12px);
+    box-shadow: var(--shadow-card);
+    padding: 10px 24px 20px;
+    transform: translateY(-10px);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: transform 0.25s ease, opacity 0.25s ease, visibility 0s linear 0.25s;
+    transition: transform 0.25s var(--ease-out), opacity 0.25s ease, visibility 0s linear 0.25s;
   }
 
   .nav__mobile--open {
@@ -363,24 +475,44 @@ onBeforeUnmount(() => {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    transition: transform 0.25s ease, opacity 0.25s ease, visibility 0s;
+    transition: transform 0.25s var(--ease-out), opacity 0.25s ease, visibility 0s;
   }
 
   .nav__mobile-link {
-    padding: 12px 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 4px;
     font-family: var(--font-mono);
     font-size: var(--fs-lg);
     color: var(--ink-dim);
     border-bottom: 1px dashed var(--line);
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: color 0.2s ease, opacity 0.25s ease, transform 0.25s var(--ease-out);
   }
 
-  .nav__mobile-link:hover {
-    color: var(--accent);
+  .nav__mobile--open .nav__mobile-link {
+    opacity: 1;
+    transform: translateX(0);
   }
 
+  .nav__mobile-link:last-child {
+    border-bottom: none;
+  }
+
+  .nav__mobile-index {
+    font-size: var(--fs-xs);
+    color: var(--ink-faint);
+  }
+
+  .nav__mobile-link:hover,
   .nav__mobile-link--active {
     color: var(--accent);
-    border-bottom-color: var(--accent);
+  }
+
+  .nav__mobile-link--active .nav__mobile-index {
+    color: var(--accent);
   }
 }
 </style>

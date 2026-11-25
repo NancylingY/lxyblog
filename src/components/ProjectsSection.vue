@@ -1,15 +1,56 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useResume, type Project } from '../data/resume'
+import { useShowcaseCopy } from '../data/showcase'
 
 const { t, projects } = useResume()
+const copy = useShowcaseCopy()
 
 const activeId = ref<string | null>(null)
+const selectedRole = ref<string>('ALL')
 const el = ref<HTMLElement | null>(null)
 const visible = ref(false)
 
 let observer: IntersectionObserver | null = null
+
+const roleFilters = computed(() => {
+  const counts = new Map<string, number>()
+  for (const p of projects.value) {
+    counts.set(p.role, (counts.get(p.role) ?? 0) + 1)
+  }
+  return [
+    { key: 'ALL', label: copy.value.filterAll, count: projects.value.length },
+    ...Array.from(counts.entries()).map(([role, count]) => ({
+      key: role,
+      label: role,
+      count,
+    })),
+  ]
+})
+
+const filteredProjects = computed(() =>
+  selectedRole.value === 'ALL'
+    ? projects.value
+    : projects.value.filter((p) => p.role === selectedRole.value),
+)
+
+// 语言切换导致角色名称变化时，安全重置筛选为全部
+watch(projects, () => {
+  if (
+    selectedRole.value !== 'ALL' &&
+    !projects.value.some((p) => p.role === selectedRole.value)
+  ) {
+    selectedRole.value = 'ALL'
+  }
+})
+
+function selectRole(role: string) {
+  selectedRole.value = role
+  if (activeId.value && !filteredProjects.value.some((p) => p.id === activeId.value)) {
+    activeId.value = null
+  }
+}
 
 onMounted(() => {
   observer = new IntersectionObserver(
@@ -80,6 +121,9 @@ function resetTilt(event: PointerEvent) {
 }
 
 async function toggle(p: Project, event: MouseEvent) {
+  // 允许用户复制展开后的文字而不误触收起
+  if (window.getSelection()?.toString()) return
+
   const card = (event.currentTarget as HTMLElement).closest('.project') as HTMLElement | null
   const opening = activeId.value !== p.id
   activeId.value = opening ? p.id : null
@@ -127,19 +171,37 @@ function ensurePlay(e: Event) {
 <template>
   <section id="projects" ref="el" class="section projects">
     <div class="container">
-      <div class="section-head reveal" :class="{ 'is-visible': visible }">
-        <span class="section-label">~/projects</span>
-        <h2 class="section-title">{{ t.projectsTitle }}</h2>
-        <p class="section-sub">{{ t.projectsSub }}</p>
+      <div class="projects__header reveal" :class="{ 'is-visible': visible }">
+        <div class="section-head" :class="{ 'is-visible': visible }">
+          <span class="section-label">~/projects</span>
+          <h2 class="section-title">{{ t.projectsTitle }}</h2>
+          <p class="section-sub">{{ t.projectsSub }}</p>
+        </div>
+
+        <div class="projects__filters" role="tablist" :aria-label="copy.filterLabel">
+          <button
+            v-for="item in roleFilters"
+            :key="item.key"
+            type="button"
+            role="tab"
+            class="projects__filter"
+            :class="{ 'is-active': selectedRole === item.key }"
+            :aria-selected="selectedRole === item.key"
+            @click="selectRole(item.key)"
+          >
+            <span>{{ item.label }}</span>
+            <span class="projects__filter-count">{{ item.count }}</span>
+          </button>
+        </div>
       </div>
 
-      <div class="projects__grid">
+      <TransitionGroup name="project-list" tag="div" class="projects__grid">
         <article
-          v-for="(project, pi) in projects"
+          v-for="(project, pi) in filteredProjects"
           :key="project.id"
           class="card project reveal"
           :class="{ 'is-visible': visible, 'project--active': activeId === project.id }"
-          :style="{ transitionDelay: `${pi * 0.12}s` }"
+          :style="{ '--cover': project.color, transitionDelay: `${pi * 0.08}s` }"
           @click="toggle(project, $event)"
           @pointermove="onTilt"
           @pointerleave="resetTilt"
@@ -147,6 +209,10 @@ function ensurePlay(e: Event) {
           <span class="project__glare" aria-hidden="true" />
           <!-- 卡片头部：封面 + Logo / 展开后展示视频 -->
           <div class="project__cover" :style="{ '--cover': project.color }">
+            <span v-if="project.video && activeId !== project.id" class="project__demo-badge">
+              <span class="project__demo-dot" aria-hidden="true" />
+              {{ copy.hasDemo }}
+            </span>
             <span class="project__cover-index">0{{ pi + 1 }}</span>
 
             <!-- 展开且配置了展示视频：自动播放 -->
@@ -190,11 +256,16 @@ function ensurePlay(e: Event) {
             <p class="project__excerpt">{{ project.summary[0] }}</p>
 
             <div class="project__tags">
-              <span v-for="t in project.tags" :key="t" class="project__tag">{{ t }}</span>
+              <span v-for="tag in project.tags" :key="tag" class="project__tag">{{ tag }}</span>
             </div>
 
-            <button class="project__toggle" :aria-expanded="activeId === project.id">
-              {{ activeId === project.id ? t.projectCollapse : t.projectDetail }}
+            <button
+              type="button"
+              class="project__toggle"
+              :aria-expanded="activeId === project.id"
+              @click.stop="toggle(project, $event)"
+            >
+              <span>{{ activeId === project.id ? t.projectCollapse : t.projectDetail }}</span>
               <span class="project__toggle-arrow" :class="{ 'is-open': activeId === project.id }">↓</span>
             </button>
 
@@ -225,17 +296,90 @@ function ensurePlay(e: Event) {
             </div>
           </div>
         </article>
-      </div>
+      </TransitionGroup>
     </div>
   </section>
 </template>
 
 <style scoped>
+.projects__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+.projects__header .section-sub {
+  margin-bottom: 0;
+}
+
+.projects__filters {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.projects__filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s var(--ease-out);
+}
+
+.projects__filter:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  transform: translateY(-1px);
+}
+
+.projects__filter.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--glow);
+}
+
+.projects__filter-count {
+  font-size: var(--fs-xs);
+  opacity: 0.78;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
 .projects__grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 28px;
   align-items: start;
+}
+
+.project-list-enter-active,
+.project-list-leave-active {
+  transition: opacity 0.3s ease, transform 0.35s var(--ease-out);
+}
+
+.project-list-enter-from,
+.project-list-leave-to {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+}
+
+.project-list-move {
+  transition: transform 0.35s var(--ease-out);
 }
 
 .project {
@@ -244,6 +388,11 @@ function ensurePlay(e: Event) {
   cursor: pointer;
   display: flex;
   flex-direction: column;
+}
+
+/* 项目卡自带 .project__glare，避免和全局 .card::before 叠加双层光斑 */
+.project.card::before {
+  display: none;
 }
 
 /* 倾斜时关掉 transform 的 CSS transition，避免和 GSAP 抢帧 */
@@ -281,17 +430,17 @@ function ensurePlay(e: Event) {
 }
 
 .project--active {
-  border-color: var(--line-bright);
-  box-shadow: var(--shadow-card);
+  border-color: color-mix(in srgb, var(--cover, var(--accent)) 52%, var(--line-bright));
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* 封面区 */
 .project__cover {
   position: relative;
-  height: 168px;
+  height: 172px;
   background:
-    radial-gradient(ellipse 80% 90% at 20% 10%, color-mix(in srgb, var(--cover) 22%, transparent), transparent 60%),
-    radial-gradient(ellipse 70% 70% at 85% 90%, color-mix(in srgb, var(--cover) 14%, transparent), transparent 55%),
+    radial-gradient(ellipse 80% 90% at 20% 10%, color-mix(in srgb, var(--cover) 24%, transparent), transparent 60%),
+    radial-gradient(ellipse 70% 70% at 85% 90%, color-mix(in srgb, var(--cover) 16%, transparent), transparent 55%),
     linear-gradient(150deg, #10293a, #07151f);
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   overflow: hidden;
@@ -306,6 +455,32 @@ function ensurePlay(e: Event) {
     linear-gradient(90deg, color-mix(in srgb, var(--cover) 14%, transparent) 1px, transparent 1px);
   background-size: 26px 26px;
   mask-image: radial-gradient(ellipse 75% 80% at 60% 40%, #000, transparent 75%);
+}
+
+.project__demo-badge {
+  position: absolute;
+  top: 13px;
+  left: 14px;
+  z-index: var(--z-float);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(7, 21, 31, 0.72);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: #f4f7f9;
+}
+
+.project__demo-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cover, #4ade80);
+  box-shadow: 0 0 8px var(--cover, #4ade80);
 }
 
 .project__cover-index {
@@ -343,30 +518,30 @@ function ensurePlay(e: Event) {
 }
 
 .project__cover-logo {
-  width: 128px;
-  height: 128px;
+  width: 124px;
+  height: 124px;
   object-fit: contain;
   border-radius: 16px;
   /* 深色底融入卡片封面，只保留发光的图形与文字 */
   mix-blend-mode: screen;
   filter: drop-shadow(0 0 24px color-mix(in srgb, var(--cover) 40%, transparent));
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.45s var(--ease-out);
 }
 
 .project:hover .project__cover-logo {
-  transform: scale(1.08);
+  transform: scale(1.09);
 }
 
 @media (max-width: 520px) {
   .project__cover-logo {
-    width: 100px;
-    height: 100px;
+    width: 98px;
+    height: 98px;
   }
 }
 
 /* 主体 */
 .project__main {
-  padding: 26px 28px 28px;
+  padding: 24px 26px 26px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -382,7 +557,7 @@ function ensurePlay(e: Event) {
 }
 
 .project__name {
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 700;
   color: var(--ink);
 }
@@ -418,7 +593,7 @@ function ensurePlay(e: Event) {
 
 .project__excerpt {
   font-size: var(--fs-md);
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--ink-dim);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -429,7 +604,7 @@ function ensurePlay(e: Event) {
 .project__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 7px;
 }
 
 .project__tag {
@@ -438,7 +613,7 @@ function ensurePlay(e: Event) {
   color: var(--amber);
   background: var(--amber-soft);
   border: 1px solid var(--amber-border);
-  padding: 3px 11px;
+  padding: 3px 10px;
   border-radius: 999px;
 }
 
@@ -448,22 +623,26 @@ function ensurePlay(e: Event) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: none;
-  border: none;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 999px;
   color: var(--ink-dim);
   font-family: var(--font-mono);
-  font-size: var(--fs-base);
-  padding: 6px 0;
-  transition: color 0.2s ease;
+  font-size: var(--fs-sm);
+  padding: 6px 14px;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
+.project:hover .project__toggle,
 .project__toggle:hover {
   color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
 }
 
 .project__toggle-arrow {
   display: inline-block;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s var(--ease-out);
 }
 
 .project__toggle-arrow.is-open {
@@ -475,7 +654,7 @@ function ensurePlay(e: Event) {
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows 0.45s ease, opacity 0.35s ease;
+  transition: grid-template-rows 0.45s var(--ease-out), opacity 0.35s ease;
 }
 
 .project__detail-inner {
@@ -559,6 +738,12 @@ function ensurePlay(e: Event) {
     grid-template-columns: 1fr;
     max-width: 560px;
     margin-inline: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .project__main {
+    padding: 20px 20px 22px;
   }
 }
 </style>

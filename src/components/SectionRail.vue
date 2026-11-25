@@ -2,17 +2,21 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { scrollToHash } from '../utils/scroll'
 import { useResume } from '../data/resume'
+import { useScrollProgress } from '../composables/useScrollProgress'
 
 const { t } = useResume()
+const { progress } = useScrollProgress()
 
 const items = [
   { id: 'about', num: '01', label: 'ABOUT' },
-  { id: 'skills', num: '02', label: 'SKILLS' },
-  { id: 'projects', num: '03', label: 'PROJECTS' },
-  { id: 'contact', num: '04', label: 'CONTACT' },
+  { id: 'process', num: '02', label: 'PROCESS' },
+  { id: 'skills', num: '03', label: 'SKILLS' },
+  { id: 'projects', num: '04', label: 'PROJECTS' },
+  { id: 'lab', num: '05', label: 'LAB' },
+  { id: 'contact', num: '06', label: 'CONTACT' },
 ]
 
-const active = ref(0)
+const active = ref(-1)
 let observer: IntersectionObserver | null = null
 
 function go(id: string) {
@@ -23,14 +27,20 @@ onMounted(() => {
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const index = items.findIndex((item) => item.id === entry.target.id)
-          if (index >= 0) active.value = index
+        if (!entry.isIntersecting) return
+        if (entry.target.id === 'top') {
+          active.value = -1
+          return
         }
+        const index = items.findIndex((item) => item.id === entry.target.id)
+        if (index >= 0) active.value = index
       })
     },
-    { rootMargin: '-44% 0px -52% 0px', threshold: 0 },
+    { rootMargin: '-42% 0px -52% 0px', threshold: 0 },
   )
+
+  const hero = document.getElementById('top')
+  if (hero) observer.observe(hero)
 
   items.forEach((item) => {
     const section = document.getElementById(item.id)
@@ -43,7 +53,9 @@ onBeforeUnmount(() => observer?.disconnect())
 
 <template>
   <nav class="rail" :aria-label="t.ariaSectionNav">
-    <span class="rail__line" aria-hidden="true" />
+    <span class="rail__line" aria-hidden="true">
+      <span class="rail__line-fill" :style="{ transform: `scaleY(${progress})` }" />
+    </span>
     <button
       v-for="(item, i) in items"
       :key="item.id"
@@ -63,14 +75,14 @@ onBeforeUnmount(() => observer?.disconnect())
 <style scoped>
 .rail {
   position: fixed;
-  right: 28px;
+  right: 24px;
   top: 50%;
   z-index: var(--z-popover);
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  width: 92px;
+  gap: 2px;
+  width: 98px;
   pointer-events: none;
 }
 
@@ -80,13 +92,21 @@ onBeforeUnmount(() => observer?.disconnect())
   top: 8px;
   bottom: 8px;
   width: 1px;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    color-mix(in srgb, var(--ink) 22%, transparent) 18%,
-    color-mix(in srgb, var(--ink) 22%, transparent) 82%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
+  overflow: hidden;
+}
+
+.rail__line-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, var(--accent), var(--amber));
+  transform-origin: top center;
+  will-change: transform;
+}
+
+[data-theme='dark'] .rail__line-fill {
+  background: linear-gradient(180deg, var(--accent), var(--cyan));
 }
 
 .rail__item {
@@ -94,13 +114,13 @@ onBeforeUnmount(() => observer?.disconnect())
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 8px 0 8px 16px;
+  padding: 7px 0 7px 15px;
   background: none;
   border: 0;
   text-align: left;
   pointer-events: auto;
   color: var(--ink-faint);
-  transition: color 0.28s ease;
+  transition: color 0.25s ease, transform 0.25s var(--ease-out);
 }
 
 .rail__item::before {
@@ -117,7 +137,11 @@ onBeforeUnmount(() => observer?.disconnect())
   transition: opacity 0.28s ease, transform 0.28s ease, background-color 0.28s ease;
 }
 
-.rail__item:hover,
+.rail__item:hover {
+  color: var(--accent);
+  transform: translateX(-2px);
+}
+
 .rail__item.is-active {
   color: var(--accent);
 }
@@ -131,7 +155,7 @@ onBeforeUnmount(() => observer?.disconnect())
 
 .rail__num {
   font-family: var(--font-serif);
-  font-size: var(--fs-xl);
+  font-size: var(--fs-lg);
   color: var(--ink-faint);
   transition: color 0.28s ease;
 }
@@ -143,19 +167,21 @@ onBeforeUnmount(() => observer?.disconnect())
 
 .rail__label {
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-2xs);
   font-weight: 500;
   letter-spacing: 0.1em;
-  opacity: 0.55;
+  opacity: 0.52;
+  transition: opacity 0.25s ease;
 }
 
-.rail__item.is-active .rail__label {
+.rail__item.is-active .rail__label,
+.rail__item:hover .rail__label {
   opacity: 1;
 }
 
 [data-theme='dark'] .rail__num {
   font-family: var(--font-mono);
-  font-size: var(--fs-md);
+  font-size: var(--fs-sm);
   letter-spacing: 0.08em;
 }
 
@@ -171,11 +197,7 @@ onBeforeUnmount(() => observer?.disconnect())
   opacity: 0.6;
 }
 
-[data-theme='dark'] .rail__label {
-  font-size: var(--fs-xs);
-}
-
-@media (max-width: 1200px) {
+@media (max-width: 1280px) {
   .rail {
     display: none;
   }

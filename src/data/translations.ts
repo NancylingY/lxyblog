@@ -12,7 +12,7 @@ export interface Translation {
   navContact: string
   navOther: string
   navHome: string
-  navStats: string
+  navTools: string
   switchLang: string
 
   /** 实时看板页 */
@@ -140,6 +140,18 @@ export interface Translation {
   statsFailTip: string
   statsRetry: string
 
+  /** 看板掉线监测 */
+  statsWatchOk: string
+  statsWatchStale: string
+  statsWatchOffline: string
+  statsWatchChecking: string
+  statsWatchStaleText: string
+  statsWatchOfflineText: string
+  statsWatchHint: string
+  statsWatchLastUpdate: string
+  statsWatchRecheck: string
+  statsWatchAgo: string
+
   /** 页脚法务说明 */
   legalPrivacy: string
   legalTerms: string
@@ -154,7 +166,7 @@ const zh: Translation = {
   navContact: '联系',
   navOther: '其他',
   navHome: '回到首页',
-  navStats: '看板',
+  navTools: '工具',
   switchLang: '切换语言',
 
   statsTitle: 'Token 消耗看板',
@@ -164,6 +176,17 @@ const zh: Translation = {
   statsLoading: '正在连接看板…',
   statsEmptyTitle: '看板尚未上线',
   statsEmptyTip: '实时数据还在接通，稍后再来看看。',
+
+  statsWatchOk: '看板在线',
+  statsWatchStale: '数据已停更',
+  statsWatchOffline: '看板离线',
+  statsWatchChecking: '检测中',
+  statsWatchStaleText: '看板数据已停止更新',
+  statsWatchOfflineText: '无法连接看板服务',
+  statsWatchHint: '采集端（本机 AI 看板进程）可能已离线，恢复推送后这里会自动消失。',
+  statsWatchLastUpdate: '最后更新：',
+  statsWatchRecheck: '重新检测',
+  statsWatchAgo: '前',
 
   heroHello: '你好，我是',
   heroViewWork: '查看作品',
@@ -287,7 +310,7 @@ const en: Translation = {
   navContact: 'Contact',
   navOther: 'Other',
   navHome: 'Back to home',
-  navStats: 'Dashboard',
+  navTools: 'Tools',
   switchLang: 'Switch language',
 
   statsTitle: 'Token Usage Dashboard',
@@ -297,6 +320,17 @@ const en: Translation = {
   statsLoading: 'Connecting to dashboard…',
   statsEmptyTitle: 'Dashboard coming soon',
   statsEmptyTip: 'Live data is still being hooked up. Check back later.',
+
+  statsWatchOk: 'Live',
+  statsWatchStale: 'Data stale',
+  statsWatchOffline: 'Offline',
+  statsWatchChecking: 'Checking',
+  statsWatchStaleText: 'Dashboard data has stopped updating',
+  statsWatchOfflineText: 'Cannot reach the dashboard service',
+  statsWatchHint: 'The local collector that pushes data may be offline. This notice disappears once it recovers.',
+  statsWatchLastUpdate: 'Last update: ',
+  statsWatchRecheck: 'Check again',
+  statsWatchAgo: 'ago',
 
   heroHello: "Hi, I'm",
   heroViewWork: 'View Work',
@@ -461,7 +495,7 @@ export const enContent = {
         { group: 'Tools', items: ['Git', 'RESTful API'] },
       ],
       color: '#4fbfb5',
-      logo: 'https://aka.doubaocdn.com/s/MUdRjMVOC0',
+      logo: `${import.meta.env.BASE_URL}project-logos/ehr.svg`,
       video: './videos/ehr-demo.mp4',
     },
     {
@@ -481,7 +515,7 @@ export const enContent = {
         { group: 'Collab & Test', items: ['Git', 'Postman'] },
       ],
       color: '#59bf8c',
-      logo: 'https://aka.doubaocdn.com/s/yz7Oa4DMBL',
+      logo: `${import.meta.env.BASE_URL}project-logos/smartread.svg`,
       video: './videos/smartread-demo.mp4',
     },
     {
@@ -501,7 +535,7 @@ export const enContent = {
         { group: 'Tools', items: ['Maven', 'Git', 'RESTful API'] },
       ],
       color: '#5fa8c8',
-      logo: 'https://aka.doubaocdn.com/s/SpZhnBu9Vl',
+      logo: `${import.meta.env.BASE_URL}project-logos/canteen.svg`,
       video: './videos/canteen-demo.mp4',
     },
     {
@@ -519,7 +553,7 @@ export const enContent = {
         { group: 'Testing', items: ['Playwright (dev)'] },
       ],
       color: '#8fbe6f',
-      logo: 'https://aka.doubaocdn.com/s/rGgfVovKT0',
+      logo: `${import.meta.env.BASE_URL}project-logos/happywoo.svg`,
       video: './videos/happywoo-demo.mp4',
     },
     {
@@ -540,7 +574,7 @@ export const enContent = {
         { group: 'Tools', items: ['Git', 'Swagger', 'Postman'] },
       ],
       color: '#d9a05f',
-      logo: 'https://aka.doubaocdn.com/s/Kl8pVQGL8i',
+      logo: `${import.meta.env.BASE_URL}project-logos/foodtalk.svg`,
     },
     {
       id: 'campus-admin',
@@ -559,7 +593,7 @@ export const enContent = {
         { group: 'Tools', items: ['HBuilderX', 'Git', 'Axios'] },
       ],
       color: '#a98cc4',
-      logo: 'https://aka.doubaocdn.com/s/JF26gix0BC',
+      logo: `${import.meta.env.BASE_URL}project-logos/campus-admin.svg`,
     },
   ] as Project[],
 }

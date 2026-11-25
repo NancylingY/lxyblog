@@ -1,11 +1,4 @@
-/**
- * 「其他」页卡片的静态 2D 缩略图
- * - 图片来自原 3D 场景的真实截图，按卡片显示尺寸的 2 倍出图（webp）
- * - 日/夜两版同时挂载、用透明度切换，主题切换时不出现空白或闪白
- * - 图片解码前先铺一层低分辨率 LQIP，避免卡片出现空洞
- */
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useTheme } from '../composables/useTheme'
 
 interface ThumbSource {
@@ -13,32 +6,28 @@ interface ThumbSource {
   sm: string
 }
 
-const props = defineProps<{
+defineProps<{
   /** 深夜主题使用的一版 */
   night: ThumbSource
   /** 日光主题使用的一版；不传则日夜共用同一版 */
   day?: ThumbSource
-  nightLqip: string
-  dayLqip?: string
+  alt: string
 }>()
 
 const { isLight } = useTheme()
 
-const activeLqip = computed(() => (isLight.value && props.dayLqip ? props.dayLqip : props.nightLqip))
 </script>
 
 <template>
   <div class="thumb">
-    <div class="thumb__lqip" :style="{ backgroundImage: `url(${activeLqip})` }" />
-
-    <picture class="thumb__layer" :class="{ 'is-on': !day || !isLight }">
+    <picture class="thumb__layer" :class="{ 'is-on': !day || !isLight }" :aria-hidden="day && isLight ? true : undefined">
       <source media="(max-width: 720px)" :srcset="night.sm" type="image/webp" />
-      <img class="thumb__img" :src="night.lg" alt="" decoding="async" />
+      <img class="thumb__img" :src="night.lg" :alt="alt" width="1280" height="720" loading="lazy" decoding="async" />
     </picture>
 
-    <picture v-if="day" class="thumb__layer" :class="{ 'is-on': isLight }">
+    <picture v-if="day" class="thumb__layer" :class="{ 'is-on': isLight }" :aria-hidden="!isLight">
       <source media="(max-width: 720px)" :srcset="day.sm" type="image/webp" />
-      <img class="thumb__img" :src="day.lg" alt="" decoding="async" />
+      <img class="thumb__img" :src="day.lg" :alt="alt" width="1280" height="720" loading="lazy" decoding="async" />
     </picture>
   </div>
 </template>
@@ -48,17 +37,6 @@ const activeLqip = computed(() => (isLight.value && props.dayLqip ? props.dayLqi
   position: absolute;
   inset: 0;
   overflow: hidden;
-}
-
-/* LQIP：24px 宽的模糊底图，图片解码完成前先顶上 */
-.thumb__lqip {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  filter: blur(14px);
-  transform: scale(1.08);
-  opacity: 0.9;
 }
 
 .thumb__layer {

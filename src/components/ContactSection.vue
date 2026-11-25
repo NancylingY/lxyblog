@@ -82,7 +82,7 @@ function mailTo() {
 
         <!-- 右侧：信息卡 -->
         <div class="contact__info">
-          <div class="contact__row">
+          <div class="contact__row contact__row--action">
             <a class="contact__row-link" :href="`mailto:${profile.email}`" @click.prevent="mailTo">
               <span class="contact__row-icon">@</span>
               <span class="contact__row-body">
@@ -90,12 +90,18 @@ function mailTo() {
                 <span class="contact__row-value">{{ profile.email }}</span>
               </span>
             </a>
-            <button class="contact__copy" :title="copied ? t.contactCopied : t.contactCopy" @click="copyEmail">
-              {{ copied ? '✓' : t.contactCopy }}
+            <button
+              type="button"
+              class="contact__copy"
+              :class="{ 'is-copied': copied }"
+              :title="copied ? t.contactCopied : t.contactCopy"
+              @click="copyEmail"
+            >
+              {{ copied ? `✓ ${t.contactCopied}` : t.contactCopy }}
             </button>
           </div>
 
-          <a class="contact__row" :href="`tel:${profile.phone}`" @click.prevent="callPhone">
+          <a class="contact__row contact__row--action" :href="`tel:${profile.phone}`" @click.prevent="callPhone">
             <span class="contact__row-icon">#</span>
             <span class="contact__row-body">
               <span class="contact__row-label">{{ t.contactPhone }}</span>
@@ -193,13 +199,17 @@ function mailTo() {
   background: var(--bg-1);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  transition: border-color 0.25s ease, background 0.25s ease;
+  transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s var(--ease-out);
+}
+
+.contact__row--action {
   cursor: pointer;
 }
 
-.contact__row:hover {
-  border-color: var(--line-bright);
+.contact__row--action:hover {
+  border-color: var(--accent-border);
   background: var(--bg-3);
+  transform: translateX(3px);
 }
 
 /* 行内可点击区域与复制按钮拆开，避免交互控件嵌套 */
@@ -242,7 +252,7 @@ function mailTo() {
   font-family: var(--font-mono);
   font-size: var(--fs-lg);
   color: var(--ink);
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .contact__row-value--live {
@@ -268,6 +278,13 @@ function mailTo() {
 .contact__copy:hover {
   color: var(--accent);
   border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.contact__copy.is-copied {
+  color: var(--on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .contact__live-dot {
@@ -290,6 +307,37 @@ function mailTo() {
     grid-template-columns: 1fr;
     padding: 30px 26px;
     gap: 32px;
+  }
+}
+
+@media (max-width: 520px) {
+  .contact__panel {
+    padding: 24px 18px;
+    gap: 26px;
+  }
+
+  .contact__row {
+    padding: 13px 14px;
+    gap: 10px;
+  }
+
+  .contact__row-link {
+    gap: 10px;
+  }
+
+  .contact__row-icon {
+    width: 34px;
+    height: 34px;
+    font-size: var(--fs-lg);
+  }
+
+  .contact__row-value {
+    font-size: var(--fs-base);
+  }
+
+  .contact__copy {
+    padding: 5px 9px;
+    font-size: var(--fs-xs);
   }
 }
 </style>

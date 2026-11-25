@@ -6,10 +6,7 @@ import { gsap } from 'gsap'
 
 let currentTween: ReturnType<typeof gsap.to> | null = null
 
-export function scrollToHash(hash: string) {
-  const el = document.querySelector(hash)
-  if (!el) return
-  const top = el.getBoundingClientRect().top + window.scrollY - 72
+function scrollToY(top: number, duration = 0.85) {
   const root = document.documentElement
   const prevBehavior = root.style.scrollBehavior
   root.style.scrollBehavior = 'auto'
@@ -28,11 +25,23 @@ export function scrollToHash(hash: string) {
   const proxy = { y: window.scrollY }
   currentTween = gsap.to(proxy, {
     y: top,
-    duration: 0.85,
+    duration,
     ease: 'power3.inOut',
     overwrite: true,
     onUpdate: () => window.scrollTo(0, proxy.y),
     onComplete: restore,
     onInterrupt: restore,
   })
+}
+
+export function scrollToHash(hash: string) {
+  const el = document.querySelector(hash)
+  if (!el) return
+  scrollToY(el.getBoundingClientRect().top + window.scrollY - 72)
+}
+
+/** 回到页面顶部：距离越远时长越长，但封顶 1.2s */
+export function scrollToTop() {
+  const duration = Math.min(1.2, 0.5 + window.scrollY / 6000)
+  scrollToY(0, duration)
 }

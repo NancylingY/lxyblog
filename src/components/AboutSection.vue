@@ -46,9 +46,14 @@ onBeforeUnmount(() => observer?.disconnect())
             <span class="prompt">$</span> {{ t.aboutAdvantages }}
           </h3>
           <ul class="about__list">
-            <li v-for="item in advantages" :key="item" class="about__item">
-              <span class="about__bullet">▸</span>
-              <span>{{ item }}</span>
+            <li
+              v-for="(item, idx) in advantages"
+              :key="item"
+              class="about__item"
+              :style="{ '--i': idx }"
+            >
+              <span class="about__num">0{{ idx + 1 }}</span>
+              <span class="about__text">{{ item }}</span>
             </li>
           </ul>
         </div>
@@ -80,7 +85,9 @@ onBeforeUnmount(() => observer?.disconnect())
   align-items: center;
   gap: 8px;
   font-size: 18px;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--line);
   color: var(--ink);
 }
 
@@ -92,21 +99,37 @@ onBeforeUnmount(() => observer?.disconnect())
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .about__item {
   display: flex;
   gap: 12px;
   align-items: baseline;
+  padding: 8px 10px;
+  margin-inline: -10px;
+  border-radius: var(--radius-sm);
   color: var(--ink-dim);
   font-size: var(--fs-lg);
-  line-height: 1.6;
+  line-height: 1.62;
+  transition: background-color 0.22s ease, color 0.22s ease, transform 0.22s var(--ease-out);
 }
 
-.about__bullet {
-  color: var(--accent);
+.about__item:hover {
+  background: var(--accent-soft);
+  color: var(--ink);
+  transform: translateX(3px);
+}
+
+.about__num {
   font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  padding: 1px 7px;
   flex-shrink: 0;
 }
 
@@ -118,6 +141,12 @@ onBeforeUnmount(() => observer?.disconnect())
 @media (max-width: 860px) {
   .about__grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .about__card {
+    padding: 24px 20px;
   }
 }
 </style>

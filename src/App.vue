@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import NavBar from './components/NavBar.vue'
+import BackToTop from './components/BackToTop.vue'
 import { useRoute } from 'vue-router'
 import { useResume } from './data/resume'
 
@@ -14,4 +15,5 @@ const { t } = useResume()
   <main id="content" tabindex="-1">
     <router-view />
   </main>
+  <BackToTop v-if="!route.meta.bare" />
 </template>

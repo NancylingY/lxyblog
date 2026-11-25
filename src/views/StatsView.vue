@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useResume } from '../data/resume'
 import { dashboard } from '../data/dashboard'
 import { useTheme } from '../composables/useTheme'
+import UsageOverview from '../components/UsageOverview.vue'
 
-const { t } = useResume()
+const { t, locale } = useResume()
 const { theme } = useTheme()
 const loading = ref(true)
 const failed = ref(false)
@@ -13,6 +14,136 @@ const frameHeight = ref(0)
 const frameEl = ref<HTMLIFrameElement | null>(null)
 let startedAt = 0
 let fallbackTimer = 0
+
+/**
+ * 看板掉线监测：直接读看板自己的 /api/usage（同源），用 generated_at 判断数据新鲜度。
+ * 采集端每 10 秒推一次快照，所以超过 5 分钟没更新基本就是掉了（进程被杀/断网/服务挂了）。
+ */
+type WatchState = 'checking' | 'ok' | 'stale' | 'offline' | 'unknown'
+const WATCH_STALE_MS = 5 * 60 * 1000
+const WATCH_INTERVAL_MS = 60 * 1000
+const watchState = ref<WatchState>('checking')
+const lastGeneratedAt = ref<number | null>(null)
+const nowTick = ref(Date.now())
+let watchTimer = 0
+let tickTimer = 0
+let watchAbort: AbortController | null = null
+let disposed = false
+
+const isZh = computed(() => String(locale.value || '').toLowerCase().startsWith('zh'))
+const watchLabel = computed(() => {
+  if (watchState.value === 'ok') return t.value.statsWatchOk
+  if (watchState.value === 'stale') return t.value.statsWatchStale
+  if (watchState.value === 'offline') return t.value.statsWatchOffline
+  return t.value.statsWatchChecking
+})
+const watchWarn = computed(() => watchState.value === 'stale' || watchState.value === 'offline')
+const lastUpdateAgo = computed(() => (lastGeneratedAt.value ? agoText(lastGeneratedAt.value) : ''))
+
+/** 中文用「x 分钟前」，英文用「x min ago」 */
+function agoText(ts: number): string {
+  const sec = Math.max(0, Math.round((nowTick.value - ts) / 1000))
+  if (sec < 90) return isZh.value ? '刚刚' : 'just now'
+  const min = Math.round(sec / 60)
+  if (min < 60) return isZh.value ? `${min} 分钟前` : `${min} min ago`
+  const hr = Math.floor(min / 60)
+  const rest = min % 60
+  if (hr < 24) {
+    return isZh.value ? `${hr} 小时${rest ? ` ${rest} 分` : ''}前` : `${hr}h${rest ? ` ${rest}m` : ''} ago`
+  }
+  const day = Math.floor(hr / 24)
+  return isZh.value ? `${day} 天前` : `${day}d ago`
+}
+
+/** 能不能监测：看板必须和博客同源，否则 fetch 会被跨域拦住 */
+function canWatch(): boolean {
+  if (!dashboard.url) return false
+  try {
+    return new URL(dashboard.url).origin === window.location.origin
+  } catch {
+    return false
+  }
+}
+
+function watchUrl(path = 'api/usage'): string | null {
+  if (!dashboard.url) return null
+  try {
+    const base = new URL(dashboard.url)
+    if (!base.pathname.endsWith('/')) base.pathname += '/'
+    const url = new URL(path, base)
+    if (dashboard.token) url.searchParams.set('t', dashboard.token)
+    return url.toString()
+  } catch {
+    return null
+  }
+}
+
+async function checkWatch(): Promise<void> {
+  if (disposed) return
+  if (!canWatch()) {
+    watchState.value = 'unknown'
+    return
+  }
+  const url = watchUrl()
+  if (!url) {
+    watchState.value = 'offline'
+    return
+  }
+  watchAbort?.abort()
+  const ac = new AbortController()
+  watchAbort = ac
+  let timedOut = false
+  const timer = window.setTimeout(() => {
+    timedOut = true
+    ac.abort()
+  }, 9000)
+  try {
+    const res = await fetch(url, { cache: 'no-store', signal: ac.signal, credentials: 'same-origin' })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const doc = (await res.json()) as { generated_at?: string }
+    const generated = Date.parse(doc?.generated_at || '')
+    if (!Number.isFinite(generated)) throw new Error('generated_at missing')
+    lastGeneratedAt.value = generated
+    nowTick.value = Date.now()
+    watchState.value = Date.now() - generated > WATCH_STALE_MS ? 'stale' : 'ok'
+  } catch {
+    // 主动取消（页面卸载/重新检测）不算掉线；超时才算
+    if (disposed || (ac.signal.aborted && !timedOut)) return
+    watchState.value = 'offline'
+  } finally {
+    window.clearTimeout(timer)
+    if (watchAbort === ac) watchAbort = null
+  }
+}
+
+function startWatch() {
+  if (!canWatch()) {
+    watchState.value = 'unknown'
+    return
+  }
+  void checkWatch()
+  watchTimer = window.setInterval(() => void checkWatch(), WATCH_INTERVAL_MS)
+  tickTimer = window.setInterval(() => {
+    nowTick.value = Date.now()
+  }, 30 * 1000)
+}
+
+function stopWatch() {
+  disposed = true
+  window.clearInterval(watchTimer)
+  window.clearInterval(tickTimer)
+  watchAbort?.abort()
+  watchAbort = null
+}
+
+function recheckWatch() {
+  watchState.value = 'checking'
+  void checkWatch()
+}
+
+function onVisibility() {
+  if (document.visibilityState === 'visible' && !disposed) void checkWatch()
+}
 
 /** 看板同源时，手机上用它上报的内容高度撑满，避免 iframe 内再套一层滚动 */
 let frameOrigin = ''
@@ -55,6 +186,7 @@ function markFailed() {
   window.clearTimeout(fallbackTimer)
   failed.value = true
   loading.value = false
+  if (watchState.value !== 'unknown') watchState.value = 'offline'
 }
 
 function retry() {
@@ -64,17 +196,22 @@ function retry() {
   startedAt = performance.now()
   reloadKey.value += 1
   fallbackTimer = window.setTimeout(markFailed, 15000)
+  void checkWatch()
 }
 
 onMounted(() => {
   startedAt = performance.now()
   fallbackTimer = window.setTimeout(markFailed, 15000)
   window.addEventListener('message', onMessage)
+  document.addEventListener('visibilitychange', onVisibility)
+  startWatch()
 })
 
 onBeforeUnmount(() => {
   window.clearTimeout(fallbackTimer)
   window.removeEventListener('message', onMessage)
+  document.removeEventListener('visibilitychange', onVisibility)
+  stopWatch()
 })
 
 watch(theme, async () => {
@@ -123,6 +260,36 @@ const embedSrc = buildUrl(theme.value)
         <h2 class="section-title">{{ t.statsTitle }}</h2>
         <p class="section-sub">{{ t.statsSub }}</p>
       </div>
+
+      <div
+        v-if="watchState !== 'unknown'"
+        class="stats__watch"
+        :class="`is-${watchState}`"
+        role="status"
+        aria-live="polite"
+      >
+        <span class="stats__watch-dot" aria-hidden="true"></span>
+        <span class="stats__watch-label">{{ watchLabel }}</span>
+        <span v-if="lastGeneratedAt && watchState !== 'checking'" class="stats__watch-meta">
+          {{ t.statsWatchLastUpdate }}{{ lastUpdateAgo }}
+        </span>
+      </div>
+
+      <div v-if="watchWarn" class="stats__watchbar" role="alert">
+        <span class="stats__watchbar-icon" aria-hidden="true">!</span>
+        <div class="stats__watchbar-body">
+          <strong>{{ watchState === 'stale' ? t.statsWatchStaleText : t.statsWatchOfflineText }}</strong>
+          <span v-if="watchState === 'stale' && lastGeneratedAt" class="stats__watchbar-meta">
+            · {{ t.statsWatchLastUpdate }}{{ lastUpdateAgo }}
+          </span>
+          <p>{{ t.statsWatchHint }}</p>
+        </div>
+        <button class="btn btn--ghost stats__watchbar-btn" type="button" @click="recheckWatch">
+          {{ t.statsWatchRecheck }}
+        </button>
+      </div>
+
+      <UsageOverview v-if="canWatch()" :endpoint="watchUrl() ?? ''" :chinese="isZh" />
 
       <div v-if="embedSrc" class="stats__embed" :class="{ 'is-ready': !loading && !failed }">
         <iframe
@@ -181,6 +348,146 @@ const embedSrc = buildUrl(theme.value)
 .stats {
   padding-top: calc(var(--nav-h) + 64px);
   padding-bottom: 100px;
+}
+
+/* ---------- 看板掉线监测 ---------- */
+.stats__watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+
+.stats__watch-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  flex: 0 0 auto;
+}
+
+.stats__watch.is-ok {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+}
+
+.stats__watch.is-ok .stats__watch-dot {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: watch-pulse 2.4s ease-in-out infinite;
+}
+
+.stats__watch.is-checking .stats__watch-dot {
+  background: var(--ink-faint);
+  animation: watch-pulse 1.2s ease-in-out infinite;
+}
+
+.stats__watch.is-stale {
+  color: #b45309;
+  border-color: rgba(180, 83, 9, 0.35);
+  background: rgba(180, 83, 9, 0.08);
+}
+
+.stats__watch.is-stale .stats__watch-dot {
+  background: #d97706;
+}
+
+.stats__watch.is-offline {
+  color: var(--danger);
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.07);
+}
+
+.stats__watch.is-offline .stats__watch-dot {
+  background: var(--danger);
+}
+
+.stats__watch-meta {
+  opacity: 0.78;
+}
+
+@keyframes watch-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.stats__watchbar {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-left: 3px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.stats__watchbar-icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stats__watchbar-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.stats__watchbar-body strong {
+  font-size: var(--fs-md);
+  color: var(--ink);
+}
+
+.stats__watchbar-meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--ink-dim);
+  margin-left: 2px;
+}
+
+.stats__watchbar-body p {
+  margin-top: 4px;
+  font-size: var(--fs-sm);
+  color: var(--ink-dim);
+}
+
+.stats__watchbar-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .stats__watchbar {
+    flex-wrap: wrap;
+  }
+
+  .stats__watchbar-btn {
+    width: 100%;
+  }
 }
 
 .stats__embed {

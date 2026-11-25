@@ -14,6 +14,9 @@ const { isLight } = useTheme()
 
 const root = ref<HTMLElement | null>(null)
 const pointerLight = ref<HTMLElement | null>(null)
+const statStacks = ref(20)
+const statProjects = ref(6)
+const statDirections = ref(3)
 let ctx: ReturnType<typeof gsap.context> | null = null
 let mm: ReturnType<typeof gsap.matchMedia> | null = null
 let lightX: ((value: number) => void) | null = null
@@ -67,6 +70,21 @@ onMounted(() => {
       .from('.hero__visual', { y: 34, opacity: 0, scale: 0.96, duration: 0.9 }, 0.25)
       .from('.hero__scroll', { opacity: 0, duration: 0.5 }, '-=0.2')
 
+    const counters = { stacks: 0, projects: 0, directions: 0 }
+    gsap.to(counters, {
+      stacks: 20,
+      projects: 6,
+      directions: 3,
+      duration: 1.15,
+      delay: 0.45,
+      ease: 'power2.out',
+      onUpdate: () => {
+        statStacks.value = Math.round(counters.stacks)
+        statProjects.value = Math.round(counters.projects)
+        statDirections.value = Math.round(counters.directions)
+      },
+    })
+
     mm = gsap.matchMedia()
     mm.add('(min-width: 961px) and (prefers-reduced-motion: no-preference)', () => {
       gsap.to('.hero__visual', {
@@ -113,22 +131,33 @@ onBeforeUnmount(() => {
         <p class="hero__desc">{{ profile.intro }}</p>
 
         <div class="hero__actions">
-          <a class="btn btn--primary" href="#/#projects" @click.prevent="scrollToHash('#projects')">{{ t.heroViewWork }}</a>
+          <a class="btn btn--primary hero__cta" href="#/#projects" @click.prevent="scrollToHash('#projects')">
+            <span>{{ t.heroViewWork }}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+              <path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
           <a class="btn btn--ghost" href="#/#about" @click.prevent="scrollToHash('#about')">{{ t.heroAboutMe }}</a>
         </div>
 
         <ul class="hero__stats">
           <li class="hero__stat">
-            <span class="hero__stat-num">20+</span>
-            <span class="hero__stat-label">{{ t.statStacks }}</span>
+            <a class="hero__stat-link" href="#/#skills" @click.prevent="scrollToHash('#skills')">
+              <span class="hero__stat-num">{{ statStacks }}+</span>
+              <span class="hero__stat-label">{{ t.statStacks }}</span>
+            </a>
           </li>
           <li class="hero__stat">
-            <span class="hero__stat-num">6</span>
-            <span class="hero__stat-label">{{ t.statProjects }}</span>
+            <a class="hero__stat-link" href="#/#projects" @click.prevent="scrollToHash('#projects')">
+              <span class="hero__stat-num">{{ statProjects }}</span>
+              <span class="hero__stat-label">{{ t.statProjects }}</span>
+            </a>
           </li>
           <li class="hero__stat">
-            <span class="hero__stat-num">3</span>
-            <span class="hero__stat-label">{{ t.statDirections }}</span>
+            <a class="hero__stat-link" href="#/#process" @click.prevent="scrollToHash('#process')">
+              <span class="hero__stat-num">{{ statDirections }}</span>
+              <span class="hero__stat-label">{{ t.statDirections }}</span>
+            </a>
           </li>
         </ul>
       </div>
@@ -239,8 +268,12 @@ onBeforeUnmount(() => {
   gap: 10px;
   font-family: var(--font-mono);
   font-size: var(--fs-base);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  padding: 5px 14px;
+  border-radius: 999px;
   margin-bottom: 22px;
 }
 
@@ -300,7 +333,15 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
-  margin-bottom: 44px;
+  margin-bottom: 42px;
+}
+
+.hero__cta svg {
+  transition: transform 0.25s var(--ease-out);
+}
+
+.hero__cta:hover svg {
+  transform: translateX(4px);
 }
 
 /* 统计条 */
@@ -311,27 +352,43 @@ onBeforeUnmount(() => {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--bg-2);
+  box-shadow: inset 0 1px 0 var(--card-top-sheen);
   overflow: hidden;
 }
 
 .hero__stat {
   flex: 1;
-  padding: 14px 20px;
   border-right: 1px solid var(--line);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
 .hero__stat:last-child {
   border-right: none;
 }
 
+.hero__stat-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 15px 20px;
+  color: inherit;
+  transition: background-color 0.22s ease;
+}
+
+.hero__stat-link:hover {
+  background: var(--accent-soft);
+}
+
 .hero__stat-num {
   font-family: var(--font-mono);
   font-size: 24px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--accent);
+  transition: transform 0.25s var(--ease-out);
+}
+
+.hero__stat-link:hover .hero__stat-num {
+  transform: translateX(2px);
 }
 
 .hero__stat-label {
@@ -404,6 +461,8 @@ onBeforeUnmount(() => {
 
   .hero__visual {
     order: -1;
+    transform: none !important;
+    margin-bottom: 6px;
   }
 
   .hero__stage {
@@ -417,7 +476,7 @@ onBeforeUnmount(() => {
   }
 
   .hero__grid {
-    gap: 24px;
+    gap: 32px;
   }
 
   .hero__scroll {
@@ -428,7 +487,7 @@ onBeforeUnmount(() => {
     margin-bottom: 28px;
   }
 
-  .hero__stat {
+  .hero__stat-link {
     padding: 12px 14px;
   }
 

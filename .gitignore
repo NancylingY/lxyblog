@@ -16,6 +16,7 @@ dist.tgz
 .workbuddy
 models-archive/
 screenshots/
+SERVER_INFO.md
 
 # Editor directories and files
 .vscode/*
