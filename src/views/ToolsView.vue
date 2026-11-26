@@ -5,9 +5,12 @@ const { isZh } = useI18n()
 </script>
 
 <template>
-  <section class="section">
+  <section class="section tools-page">
     <div class="container">
-      <h1 class="section-title">{{ isZh ? '工具' : 'Tools' }}</h1>
+      <div class="section-head is-visible">
+        <span class="section-label">~/tools</span>
+        <h1 class="section-title">{{ isZh ? '工具' : 'Tools' }}</h1>
+      </div>
       <div class="tools">
         <RouterLink class="tool card" to="/prompt-enhancer">
           <div class="tool-top" aria-hidden="true">
@@ -15,7 +18,13 @@ const { isZh } = useI18n()
             <span class="tool-arrow">↗</span>
           </div>
           <h2>{{ isZh ? '提示词增强' : 'Prompt enhancer' }}</h2>
-          <p>{{ isZh ? '用本地规则或自选模型改写提示词。' : 'Refine prompts with local rules or a model you configure.' }}</p>
+          <p>
+            {{
+              isZh
+                ? '意图识别、表达精简、信息与约束补全、结构重组及质量自检，支持本地规则与 AI 改写。'
+                : 'Intent recognition, streamlining, context & constraint completion, restructuring, and quality checks — locally or via AI.'
+            }}
+          </p>
         </RouterLink>
         <RouterLink class="tool card tool--stats" to="/stats">
           <div class="tool-top" aria-hidden="true">
@@ -31,6 +40,9 @@ const { isZh } = useI18n()
 </template>
 
 <style scoped>
+.tools-page {
+  padding-top: calc(var(--nav-h) + 48px);
+}
 .tools {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
