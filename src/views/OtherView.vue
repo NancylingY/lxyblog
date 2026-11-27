@@ -7,8 +7,10 @@ import { useI18n } from '../i18n'
 import PelicanRideCard from '../components/PelicanRideCard.vue'
 import { usePangolinCopy } from '../data/pangolin'
 import { brickGardenCopy as brick } from '../data/brickGarden'
+import { useChongqingCopy } from '../data/chongqing'
 
 const pangolin = usePangolinCopy()
+const chongqing = useChongqingCopy()
 
 const { t } = useResume()
 const router = useRouter()
@@ -49,6 +51,11 @@ function enterLighthouse() {
   router.push('/lighthouse')
 }
 
+/* 重庆雨城：整卡进入 1:150 三层立体剖面沙盘 */
+function enterChongqing() {
+  router.push('/chongqing')
+}
+
 onMounted(() => {
   requestAnimationFrame(() => (mounted.value = true))
 })
@@ -64,6 +71,44 @@ onMounted(() => {
       </div>
 
       <div class="other__grid">
+      <!-- 重庆雨城 · 1:150 三层立体剖面 3D 沙盘卡片 -->
+      <article
+        class="card konbini konbini--chongqing reveal"
+        :class="{ 'is-visible': mounted }"
+        role="link"
+        tabindex="0"
+        :aria-label="chongqing.enter"
+        @click="enterChongqing"
+        @keydown.enter="enterChongqing"
+        @keydown.space.prevent="enterChongqing"
+      >
+        <div class="konbini__stage">
+          <CardThumb :night="cover('chongqing')" :alt="chongqing.alt" />
+          <span class="konbini__badge">
+            <i class="konbini__badge-dot" />
+            {{ chongqing.status }}
+          </span>
+          <span class="konbini__enter">
+            {{ chongqing.enter }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+              <path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </div>
+        <div class="konbini__info">
+          <div class="konbini__head">
+            <h3 class="konbini__title">
+              {{ chongqing.title }}
+              <span class="konbini__title-en">{{ chongqing.titleEn }}</span>
+            </h3>
+            <span class="konbini__eta">3D</span>
+          </div>
+          <p class="konbini__desc">{{ chongqing.description }}</p>
+          <div class="konbini__tags">
+            <span v-for="tag in chongqing.tags" :key="tag" class="konbini__tag">{{ tag }}</span>
+          </div>
+        </div>
+      </article>
       <PelicanRideCard />
       <article class="card konbini konbini--pangolin reveal" :class="{ 'is-visible': mounted }" role="link" tabindex="0" :aria-label="pangolin.enter" @click="router.push('/pangolin')" @keydown.enter="router.push('/pangolin')" @keydown.space.prevent="router.push('/pangolin')">
         <div class="konbini__stage">
@@ -467,7 +512,7 @@ onMounted(() => {
 
 
 @media (min-width: 901px) {
-  .konbini:is(.konbini--pangolin, .konbini--brick, .konbini--house, .konbini--sea) {
+  .konbini:is(.konbini--chongqing, .konbini--pangolin, .konbini--brick, .konbini--house, .konbini--sea) {
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: 1.55fr 1fr;

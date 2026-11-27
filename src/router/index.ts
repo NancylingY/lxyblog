@@ -94,6 +94,13 @@ const router = createRouter({
       meta: { bare: true },
     },
     {
+      // 重庆雨城：1:150 三层立体剖面微缩沙盘
+      path: '/chongqing',
+      name: 'chongqing',
+      component: () => import('../views/ChongqingView.vue'),
+      meta: { bare: true },
+    },
+    {
       // 项目已合并进首页，旧路径重定向到首页项目锚点
       path: '/projects',
       redirect: '/#projects',
